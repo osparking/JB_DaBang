@@ -1,4 +1,6 @@
-package com.jbpark.dabang;
+package com.jbpark.dabang.store;
+
+import com.jbpark.dabang.module.TeaType;
 
 public class DaBang {
 
