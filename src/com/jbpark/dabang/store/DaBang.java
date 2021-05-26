@@ -1,5 +1,9 @@
 package com.jbpark.dabang.store;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Scanner;
 
 import com.jbpark.dabang.module.TeaType;
@@ -23,6 +27,14 @@ public class DaBang {
 				TeaType.율무차.toString() );
 		
 		System.out.println(menu);
+		int idx = LocalDate.now().getDayOfYear() % teaTypes.length;
+//		teaTypes // 배열 학습 후 완성
+		String weekDay = LocalDateTime.now().format(
+				DateTimeFormatter.ofPattern("E") // E => Weekday
+				.withLocale(Locale.KOREAN));
+		System.out.println(weekDay + "요일 스페셜: " + teaTypes[idx]);
+//		TeaType.감잎차.ordinal()
+		
 		System.out.println("원하는 차 종류를 입력: ");
 		
 		Scanner scanner = new Scanner(System.in);		
