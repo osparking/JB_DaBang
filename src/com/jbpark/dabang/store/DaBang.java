@@ -1,5 +1,7 @@
 package com.jbpark.dabang.store;
 
+import java.util.Scanner;
+
 import com.jbpark.dabang.module.TeaType;
 
 public class DaBang {
@@ -21,7 +23,13 @@ public class DaBang {
 				TeaType.율무차.toString() );
 		
 		System.out.println(menu);
-		String[] menus = menu.split("/");
+		System.out.println("원하는 차 종류를 입력: ");
+		
+		Scanner scanner = new Scanner(System.in);		
+		int 제품번호 = scanner.nextInt();
+		System.out.println("제품번호 " + 제품번호 + "를 선택하셨습니다.");
+		scanner.close();
+		
 		return ;
 	}
 }
