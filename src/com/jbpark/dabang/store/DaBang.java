@@ -14,9 +14,9 @@ public class DaBang {
 		/**
 		 * stringbuilder ==> stringbuffer로
 		 */
-		TeaType tea = TeaType.보성녹차;
+		var tea = TeaType.보성녹차;
 		System.out.println("JB 다방에 환영합니다");
-		TeaType teaTypes[] = TeaType.values();
+		var teaTypes = TeaType.values();
 
 		/**
 		 * 나중에 Enum to List 사용하여 깔끔하게 정리
