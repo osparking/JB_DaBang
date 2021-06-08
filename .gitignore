@@ -2,6 +2,7 @@
 # Project specific excludes
 #
 
+docDirectory/
 # java
 
 bin

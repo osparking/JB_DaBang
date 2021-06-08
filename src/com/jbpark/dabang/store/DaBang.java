@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Scanner;
-import com.jbpark.dabang.module.TeaType;
+
+import com.jbpark.dabang.utility.TeaType;
 
 /**
  * 이 프로그램은 한국 전통차 온라인 쇼핑몰을 구현한다.
