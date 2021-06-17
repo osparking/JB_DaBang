@@ -9,7 +9,7 @@ import java.util.Scanner;
 import com.jbpark.dabang.utility.TeaType;
 
 /**
- * 이 프로그램은 한국 전통차 온라인 쇼핑몰을 구현한다.
+ * 이 프로그램은 한국 <strong>전통차</strong> 온라인 쇼핑몰을 구현한다.
  * 이 프로그램의 깃허브 저장소는 다음과 같다.
  * 
  * @see <a href="https://github.com/osparking/JB_DaBang">JB_DaBang 깃허브 저장소</a>
