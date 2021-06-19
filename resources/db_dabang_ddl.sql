@@ -1,9 +1,9 @@
--- jb_dabang.ÀüÅëÂ÷ definition
+-- jb_dabang.ì „í†µì°¨ definition
 
-CREATE TABLE `ÀüÅëÂ÷` (
+CREATE TABLE `ì „í†µì°¨` (
   `tea_id` char(5) NOT NULL,
-  `tea_name` varchar(20) NOT NULL COMMENT 'Â÷ ÀÌ¸§(¿¹, Áú°æÀÌÂ÷)',
-  `tea_description` varchar(200) DEFAULT NULL COMMENT 'Â÷ Æ¯¼º µîÀ» ¸»·Î ¼³¸í',
+  `tea_name` varchar(20) NOT NULL COMMENT 'ì°¨ ì´ë¦„(ì˜ˆ, ì§ˆê²½ì´ì°¨)',
+  `tea_description` varchar(200) DEFAULT NULL COMMENT 'ì°¨ íŠ¹ì„± ë“±ì„ ë§ë¡œ ì„¤ëª…',
   PRIMARY KEY (`tea_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -22,5 +22,5 @@ GRANT Show view ON jb_dabang.* TO 'myself'@'%';
 GRANT Trigger ON jb_dabang.* TO 'myself'@'%';
 GRANT Update ON jb_dabang.* TO 'myself'@'%';
 
-/* ÀÏ´Ü µ¥ÀÌÅÍº£ÀÌ½º¸¦ root ·Î½á »ı¼º */
+/* ì¼ë‹¨ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ root ë¡œì¨ ìƒì„± */
 CREATE DATABASE `jb_dabang` /*!40100 DEFAULT CHARACTER SET utf8 */;
