@@ -30,15 +30,20 @@ public class DaBang {
 		jbDabang.showTeaSelection();
 
 		TeaType type = null;
+		Scanner scanner = new Scanner(System.in);
 		do {
-			type = jbDabang.getTeaSelection();
+			type = jbDabang.getTeaSelection(scanner);
+			if (type == null) {
+				System.out.println("입력 오류입니다. 다시 입력하세요 (-: ");
+			}
 		} while (type == null);
+		scanner.close();
+		
 		System.out.println("당신이 주문한 " + type + "을 준비할께요.");
 	}
 
-	private TeaType getTeaSelection() {
+	private TeaType getTeaSelection(Scanner scanner) {
 		//@formatter:off
-		Scanner scanner = new Scanner(System.in);
 		String selection = scanner.nextLine();
 		
 		selection = selection.trim();
