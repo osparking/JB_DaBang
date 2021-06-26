@@ -59,9 +59,8 @@ public class DaBang {
 	 */
 	private TeaType getTeaSelection(Scanner scanner) {
 		//@formatter:off
-		String selection = scanner.nextLine();
-		
-		selection = selection.trim();
+		String selection = 입력접수(scanner);
+
 		if (selection.isEmpty()) {
 			return TeaType.비선택;
 		}
@@ -75,8 +74,18 @@ public class DaBang {
 			}
 		}
 		return TeaType.선택오류;
-//		return null;
 		//@formatter:on
+	}
+
+	private String 입력접수(Scanner scanner) {
+		String 고객입력 = "";
+		try {
+			고객입력 = scanner.nextLine();
+			고객입력 = 고객입력.trim();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+		}
+		return 고객입력;
 	}
 
 	/**
@@ -89,7 +98,7 @@ public class DaBang {
 	private boolean getUserResponse(String question, Scanner scanner) {
 		System.out.println(question + "?[Y/n] : ");
 
-		String input = scanner.nextLine();
+		String input = 입력접수(scanner);
 
 		if (input != null) {
 			input = input.trim().toLowerCase();
