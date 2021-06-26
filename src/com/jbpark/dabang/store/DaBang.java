@@ -22,40 +22,60 @@ import com.jbpark.dabang.utility.TeaType;
  *
  */
 public class DaBang {
-
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
 
 		System.out.println("J.B. 차방이 당신을 환영합니다");
-		jbDabang.showTeaSelection();
 
-		TeaType type = null;
+		TeaType type = TeaType.비선택;
 		Scanner scanner = new Scanner(System.in);
 		do {
-			type = jbDabang.getTeaSelection(scanner);
-			if (type == null) {
-				System.out.println("입력 오류입니다. 다시 입력하세요 (-: ");
+			if (type == TeaType.선택오류) {
+				System.out.println("잘못된 입력입니다. 다시 선택해 주세요.");
 			}
-		} while (type == null);
+			jbDabang.showTeaSelection();
+			type = jbDabang.getTeaSelection(scanner);
+			if (type == TeaType.비선택) {
+				if (jbDabang.getUserResponse(
+						"주문을 원치 않으십니까", scanner)) {
+					break;
+				}
+				type = null;
+			}
+		} while (type == null || type == TeaType.선택오류);
 		scanner.close();
-		
-		System.out.println("당신이 주문한 " + type + "을 준비할께요.");
+		if (type == TeaType.비선택)
+			System.out.println("안녕히 가십시오.");
+		else 
+			System.out.println(
+					"당신이 주문한 " + type.name() + "을 준비할께요.");
 	}
 
+	/**
+	 * 고객에게 원하는 차 종류를 입력받는다.
+	 * @param scanner
+	 * @return 고객이 선택한 차 종류 혹은 null(입력 오류 혹은 입력한 
+	 * 제품 확인 거부 때)
+	 */
 	private TeaType getTeaSelection(Scanner scanner) {
 		//@formatter:off
 		String selection = scanner.nextLine();
 		
 		selection = selection.trim();
+		if (selection.isEmpty()) {
+			return TeaType.비선택;
+		}
 		for (var type : TeaType.values()) {
 			if (type.get단축명().equals(selection) || 
 					type.name().indexOf(selection) >= 0) {
-				System.out.println(type + "?");
-				if (selectionConfirmed(type, scanner))
+				if (getUserResponse(type + "을 선택하셨습니까", scanner))
 					return type;
+				else
+					return TeaType.비선택;
 			}
 		}
-		return null;
+		return TeaType.선택오류;
+//		return null;
 		//@formatter:on
 	}
 
@@ -66,8 +86,8 @@ public class DaBang {
 	 * @param scanner 고객 입력 접수용 참조
 	 * @return 맞으면 참, 아니면 거짓
 	 */
-	private boolean selectionConfirmed(TeaType type, Scanner scanner) {
-		System.out.println(type + "을 선택하셨습니까?[Y/n] : ");
+	private boolean getUserResponse(String question, Scanner scanner) {
+		System.out.println(question + "?[Y/n] : ");
 
 		String input = scanner.nextLine();
 
@@ -91,17 +111,24 @@ public class DaBang {
 		System.out.println(" * : '" + weekDay + "'요일 특별 차!");
 
 		TeaType[] teaTypes = TeaType.values();
-		long specialInx = ChronoUnit.DAYS.between(today, 
-				LocalDate.of(2021, 6, 22)) % teaTypes.length;
+		long specialInx = ChronoUnit.DAYS.between(
+				LocalDate.of(2021, 6, 22), today) 
+				% teaTypes.length;
 		//@formatter:on
-
-		for (int i = 0; i < teaTypes.length; i++) {
+		int teaCount = teaTypes.length;
+		for (int i = 0; i < teaCount; i++) {
 			var teaMenu = new StringBuffer(" -");
 
-			teaMenu.append(teaTypes[i]);
-			if (i == specialInx)
-				teaMenu.append("*");
-			System.out.println(teaMenu);
+			if (teaTypes[i] == TeaType.비선택) {
+				System.out.println(" -메뉴 선택 안함([엔터])");
+				break;
+			}
+			else {
+				teaMenu.append(teaTypes[i]);
+				if (i == specialInx)
+					teaMenu.append("*");
+				System.out.println(teaMenu);
+			}
 		}
 		System.out.println("=".repeat(40));
 		System.out.print("단축명(ㄱ-ㅎ), 이름(일부/전부) :");
