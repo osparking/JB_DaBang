@@ -30,7 +30,7 @@ public class DaBang {
 		TeaType type = TeaType.비선택;
 		Scanner scanner = new Scanner(System.in);
 		do {
-			if (type == TeaType.선택오류) {
+			if (type == TeaType.입력오류) {
 				System.out.println("잘못된 입력입니다. 다시 선택해 주세요.");
 			}
 			jbDabang.showTeaSelection();
@@ -40,9 +40,9 @@ public class DaBang {
 						"주문을 원치 않으십니까", scanner)) {
 					break;
 				}
-				type = null;
+				type = null; // 차 선택 변경 
 			}
-		} while (type == null || type == TeaType.선택오류);
+		} while (type == null || type == TeaType.입력오류);
 		scanner.close();
 		if (type == TeaType.비선택)
 			System.out.println("안녕히 가십시오.");
@@ -73,7 +73,7 @@ public class DaBang {
 					return TeaType.비선택;
 			}
 		}
-		return TeaType.선택오류;
+		return TeaType.입력오류;
 		//@formatter:on
 	}
 
