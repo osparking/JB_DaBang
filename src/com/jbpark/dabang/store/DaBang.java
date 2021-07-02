@@ -1,7 +1,7 @@
 package com.jbpark.dabang.store;
 
+import java.awt.Toolkit;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
@@ -89,20 +89,40 @@ public class DaBang {
 	}
 
 	/**
-	 * 고객이 원하는 전통차가 맞는지 확인한다.
+	 * 고객이 원하는 전통차가 맞는지 확인한다. 단, 입력 값이 Y/y, N/n, 혹은, 
+	 * [엔터]가 아니면 다시 입력하도록 요구한다.
 	 * 
 	 * @param type    고객이 선택한 차 종류
 	 * @param scanner 고객 입력 접수용 참조
 	 * @return 맞으면 참, 아니면 거짓
 	 */
 	private boolean getUserResponse(String question, Scanner scanner) {
-		System.out.println(question + "?[Y/n] : ");
 
-		String input = 입력접수(scanner);
+		String input;
+		boolean validInput = true;
+		do { 
+			if (!validInput) {
+				Toolkit.getDefaultToolkit().beep(); 
+				System.out.println("입력오류입니다. 다시 입력해 주세요");
+			}
+			System.out.println(question + "?");
+			System.out.print("Y/y/예/[엔터]=예; N/n/안=아니오 : ");
+			input = 입력접수(scanner);
+			if (input != null) {
+				input = input.trim().toLowerCase();
+			}
+			validInput = "y".equals(input) 
+					|| "n".equals(input) 
+					|| "예".equals(input) 
+					|| "안".equals(input) 
+					|| (input != null && input.isEmpty()); 
+		} while (!validInput);
 
 		if (input != null) {
 			input = input.trim().toLowerCase();
-			if (input.length() == 0 || input.equals("y"))
+			if (input.length() == 0 
+					|| input.equals("y")
+					|| input.equals("예"))
 				return true;
 		}
 		return false;
