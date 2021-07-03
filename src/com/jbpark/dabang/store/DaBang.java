@@ -160,21 +160,23 @@ public class DaBang {
 	}
 
 	/**
-	 * 고객이 원하는 전통차가 맞는지 확인한다. 단, 입력 값이 Y, y, N, n, 
-	 * [엔터] 중 하나가 아니면 재 입력을 요구한다.
+	 * 고객의 의사를 확인한다. 고객 입력 문자가 'Y', 'y', 'N', 'n' 문자 
+	 * 혹은 [엔터] 키가 아니면 재 입력을 요구한다.
 	 * 
 	 * @param type    고객이 선택한 차 종류
 	 * @param scanner 고객 입력 접수용 참조
-	 * @return 맞으면 참, 아니면 거짓
+	 * @return 참: 'Y', 'y', [엔터]키 일 때, 
+	 * 		   거짓: 'N', 'n'일 때.
 	 */
-	private boolean getUserResponse(String question, Scanner scanner) {
+	private boolean getUserResponse(String question, 
+			Scanner scanner) {
 		String input;
 		boolean validInput = true;
 		
 		do {
 			if (!validInput) {
 				Toolkit.getDefaultToolkit().beep();
-				System.out.println("입력오류입니다. 다시 입력해 주세요");
+				System.out.println("입력 오류입니다. 다시 입력해 주세요");
 			}
 			System.out.println(question + "?");
 			System.out.print("Y/y/[엔터]=예; N/n=아니오: ");
@@ -193,6 +195,8 @@ public class DaBang {
 					|| input.equals("y"))
 				return true;
 		}
+		assert "N".equals(input) || "n".equals(input)
+				: "'부정' 의사 표시로 부적절한 문자 입력!";
 		return false;
 	}
 
