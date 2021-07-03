@@ -9,6 +9,8 @@ import java.util.Scanner;
 
 import com.jbpark.dabang.utility.TeaType;
 
+import jbpark.utility.SuffixChecker;
+
 //@formatter:off
 /**
  * 이 프로그램은 한국 <strong>전통차</strong> 온라인 쇼핑몰을 구현한다. 
@@ -47,24 +49,34 @@ public class DaBang {
 
 		TeaType type = TeaType.비선택;
 		do {
-			if (type == TeaType.입력오류) {
-				System.out.println("잘못된 입력입니다. 다시 선택해 주세요.");
-			}
 			showTeaSelection();
-			type = getTeaSelection(scanner);
-			if (type == TeaType.비선택) {
-				if (getUserResponse("주문을 원치 않으십니까", scanner)) {
-					break;
+			try {
+				type = getTeaSelection(scanner);
+				if (type == TeaType.비선택) {
+					if (getUserResponse("주문을 원치 않으십니까", scanner)) {
+						break;
+					}
+					type = null; // 차 선택 변경
 				}
-				type = null; // 차 선택 변경
+			} catch (TeaInputException te) {
+				String msg = "'는 잘못된 입력입니다. 다시 선택해 주세요.";
+				System.out.println("'" + te.getMessage() + msg);
 			}
-		} while (type == null || type == TeaType.입력오류);
-
+		} while (type == null);
+		//@formatter:off	
 		if (type == TeaType.비선택)
 			System.out.println("안녕히 가십시오.");
-		else
-			System.out.println("당신이 주문한 " + type.name() 
-				+ "을 준비할께요.");
+		else {
+			String tea = type.name();
+			int idx = tea.length() - 2;
+			int cp = tea.codePointAt(idx);
+			System.out.println("당신이 주문한 '" 
+					+ tea
+					+ (SuffixChecker.has받침(cp, 
+						tea.substring(idx)) ? "'를" : "'을") 
+				+ " 준비할께요.");
+		}
+		//@formatter:off	
 
 		Toolkit.getDefaultToolkit().beep();
 	}
@@ -76,7 +88,8 @@ public class DaBang {
 	 * @return 고객이 선택한 차 종류, null(입력 오류 혹은 입력한 제품 
 	 * 			확인 거부 때)
 	 */
-	private TeaType getTeaSelection(Scanner scanner) {
+	private TeaType getTeaSelection(Scanner scanner) 
+			throws TeaInputException {
 		String selection = 입력접수(scanner);
 
 		if (selection.isEmpty()) {
@@ -85,13 +98,15 @@ public class DaBang {
 		for (var type : TeaType.values()) {
 			if (type.get단축명().equals(selection) || 
 					type.name().indexOf(selection) >= 0) {
-				if (getUserResponse(type + "을 선택하셨습니까", scanner))
+				String msg = "을 선택하셨습니까";
+				boolean resp = getUserResponse(type + msg, scanner);
+				if (resp)
 					return type;
 				else
 					return TeaType.비선택;
 			}
 		}
-		return TeaType.입력오류;
+		throw new TeaInputException(selection);
 	}
 
 	private String 입력접수(Scanner scanner) {
