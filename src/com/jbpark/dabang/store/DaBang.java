@@ -1,14 +1,19 @@
 package com.jbpark.dabang.store;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.jbpark.dabang.utility.TeaType;
 
+import jbpark.utility.JB_FileHandler;
 import jbpark.utility.SuffixChecker;
 
 //@formatter:off
@@ -28,6 +33,26 @@ import jbpark.utility.SuffixChecker;
  *
  */
 public class DaBang {
+	private static Logger logger 
+		= Logger.getLogger("com.jbpark.dabang");
+	{
+		logger.setLevel(Level.INFO);
+		logger.setUseParentHandlers(false);
+		int LOG_ROTATION_COUNT = 10;
+		JB_FileHandler handler;
+		try {
+			String logFile = "D:/LOG/JB_Dabang"; 
+			System.out.println("로그파일: " 
+					+ logFile + ".*.log.*");
+			handler = new JB_FileHandler(
+					logFile + ".%g.log", 0, 
+					LOG_ROTATION_COUNT);
+			handler.setLevel(Level.INFO);
+			logger.addHandler(handler);
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
 		try (Scanner scanner = new Scanner(System.in)) {
@@ -70,11 +95,16 @@ public class DaBang {
 			String tea = type.name();
 			int idx = tea.length() - 2;
 			int cp = tea.codePointAt(idx);
-			System.out.println("당신이 주문한 '" 
+			String msg = "당신이 주문한 '" 
 					+ tea
 					+ (SuffixChecker.has받침(cp, 
 						tea.substring(idx)) ? "'를" : "'을") 
-				+ " 준비할께요.");
+				+ " 준비할께요.";
+			DateTimeFormatter dtf 
+				= DateTimeFormatter.ofPattern("HH:mm");
+			String timeLabel = LocalTime.now().format(dtf);
+			logger.info(msg + ", 주문 시각: " + timeLabel);
+			System.out.println(msg);
 		}
 		//@formatter:off	
 
