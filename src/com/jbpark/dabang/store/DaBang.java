@@ -72,24 +72,26 @@ public class DaBang {
 		System.out.println("다음 손님 어서오세요...");
 		System.out.println("J.B.차방이 당신을 환영합니다");
 
-		TeaType type = TeaType.비선택;
+		TeaType type = null;  
+		
 		do {
 			showTeaSelection();
 			try {
 				type = getTeaSelection(scanner);
-				if (type == TeaType.비선택) {
-					if (getUserResponse("주문을 원치 않으십니까", scanner)) {
-						break;
-					}
-					type = null; // 차 선택 변경
-				}
 			} catch (TeaInputException te) {
 				String msg = "'는 잘못된 입력입니다. 다시 선택해 주세요.";
 				System.out.println("'" + te.getMessage() + msg);
+				continue;
 			}
-		} while (type == null);
-		//@formatter:off	
-		if (type == TeaType.비선택)
+			if (type == null) {
+				if (getUserResponse("주문을 원치 않으십니까",
+						scanner))
+					break;
+			} else 
+				break;
+		} while (true);
+		
+		if (type == null)
 			System.out.println("안녕히 가십시오.");
 		else {
 			String tea = type.name();
@@ -106,8 +108,6 @@ public class DaBang {
 			logger.info(msg + ", 주문 시각: " + timeLabel);
 			System.out.println(msg);
 		}
-		//@formatter:off	
-
 		Toolkit.getDefaultToolkit().beep();
 	}
 
@@ -123,7 +123,7 @@ public class DaBang {
 		String selection = 입력접수(scanner);
 
 		if (selection.isEmpty()) {
-			return TeaType.비선택;
+			return null;
 		}
 		for (var type : TeaType.values()) {
 			if (type.get단축명().equals(selection) || 
@@ -133,7 +133,7 @@ public class DaBang {
 				if (resp)
 					return type;
 				else
-					return TeaType.비선택;
+					return null;
 			}
 		}
 		throw new TeaInputException(selection);
@@ -161,9 +161,9 @@ public class DaBang {
 	 * @return 맞으면 참, 아니면 거짓
 	 */
 	private boolean getUserResponse(String question, Scanner scanner) {
-
 		String input;
 		boolean validInput = true;
+		
 		do {
 			if (!validInput) {
 				Toolkit.getDefaultToolkit().beep();
@@ -210,17 +210,12 @@ public class DaBang {
 		
 		for (int i = 0; i < teaCount; i++) {
 			var teaMenu = new StringBuffer(" -");
-
-			if (teaTypes[i] == TeaType.비선택) {
-				System.out.println(" -메뉴 선택 안함([엔터])");
-				break;
-			} else {
-				teaMenu.append(teaTypes[i]);
-				if (i == specialInx)
-					teaMenu.append("*");
-				System.out.println(teaMenu);
-			}
+			teaMenu.append(teaTypes[i]);
+			if (i == specialInx)
+				teaMenu.append("*");
+			System.out.println(teaMenu);
 		}
+		System.out.println(" -메뉴 선택 안함([엔터])");
 		System.out.println("=".repeat(40));
 		System.out.print("단축명(ㄱ-ㅎ), 이름(일부/전부): ");
 	}
