@@ -95,12 +95,12 @@ public class DaBang {
 			System.out.println("안녕히 가십시오.");
 		else {
 			String tea = type.name();
-			int idx = tea.length() - 2;
+			int idx = tea.length() - 1;
 			int cp = tea.codePointAt(idx);
 			String msg = "당신이 주문한 '" 
 					+ tea
 					+ (SuffixChecker.has받침(cp, 
-						tea.substring(idx)) ? "'를" : "'을") 
+						tea.substring(idx)) ? "'을" : "'를") 
 				+ " 준비할께요.";
 			DateTimeFormatter dtf 
 				= DateTimeFormatter.ofPattern("HH:mm");
@@ -112,11 +112,11 @@ public class DaBang {
 	}
 
 	/**
-	 * 고객에게 원하는 차 종류를 입력받는다.
+	 * 고객으로부터 선택하는 차 종류 텍스트를 입력받는다.
 	 * 
-	 * @param scanner
-	 * @return 고객이 선택한 차 종류, null(입력 오류 혹은 입력한 제품 
-	 * 			확인 거부 때)
+	 * @param scanner 고객 입력 차 종류 텍스트 스캐너
+	 * @return 선택된 차 종류 값 혹은 null(선택 불원의 경우)
+	 * @throws TeaInputException 입력 오류의 경우 발생됨
 	 */
 	private TeaType getTeaSelection(Scanner scanner) 
 			throws TeaInputException {
@@ -128,8 +128,15 @@ public class DaBang {
 		for (var type : TeaType.values()) {
 			if (type.get단축명().equals(selection) || 
 					type.name().indexOf(selection) >= 0) {
-				String msg = "을 선택하셨습니까";
-				boolean resp = getUserResponse(type + msg, scanner);
+				String teaLong = type.toString();
+				int idx = teaLong.indexOf('(');
+				int cp = teaLong.codePointAt(--idx);
+				String sfx = SuffixChecker.has받침(
+						cp, teaLong.substring(idx))
+						? "을" : "를";
+				String msg = type + sfx + " 선택하셨습니까";
+				boolean resp = getUserResponse(msg, scanner);
+				
 				if (resp)
 					return type;
 				else
@@ -153,8 +160,8 @@ public class DaBang {
 	}
 
 	/**
-	 * 고객이 원하는 전통차가 맞는지 확인한다. 단, 입력 값이 Y/y/예, N/n/안, 
-	 * 혹은, [엔터]가 아니면 다시 입력하도록 요구한다.
+	 * 고객이 원하는 전통차가 맞는지 확인한다. 단, 입력 값이 Y, y, N, n, 
+	 * [엔터] 중 하나가 아니면 재 입력을 요구한다.
 	 * 
 	 * @param type    고객이 선택한 차 종류
 	 * @param scanner 고객 입력 접수용 참조
@@ -170,23 +177,20 @@ public class DaBang {
 				System.out.println("입력오류입니다. 다시 입력해 주세요");
 			}
 			System.out.println(question + "?");
-			System.out.print("Y/y/예/[엔터]=예; N/n/안=아니오: ");
+			System.out.print("Y/y/[엔터]=예; N/n=아니오: ");
 			input = 입력접수(scanner);
 			if (input != null) {
 				input = input.trim().toLowerCase();
 			}
 			validInput = "y".equals(input) 
-					|| "n".equals(input) 
-					|| "예".equals(input) 
-					|| "안".equals(input)
+					|| "n".equals(input)
 					|| (input != null && input.isEmpty());
 		} while (!validInput);
 
 		if (input != null) {
 			input = input.trim().toLowerCase();
 			if (input.length() == 0 
-					|| input.equals("y") 
-					|| input.equals("예"))
+					|| input.equals("y"))
 				return true;
 		}
 		return false;
