@@ -12,8 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.utility.TeaType;
+import com.jbpark.utility.JB_FileHandler;
 
-import jbpark.utility.JB_FileHandler;
 import jbpark.utility.SuffixChecker;
 
 //@formatter:off
@@ -195,7 +195,7 @@ public class DaBang {
 					|| input.equals("y"))
 				return true;
 		}
-		assert "N".equals(input) || "n".equals(input)
+		assert "n".equals(input)
 				: "'부정' 의사 표시로 부적절한 문자 입력!";
 		return false;
 	}
