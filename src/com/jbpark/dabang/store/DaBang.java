@@ -1,6 +1,9 @@
 package com.jbpark.dabang.store;
 
 import java.awt.Toolkit;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +13,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.utility.TeaType;
+import com.jbpark.utility.JB_DabangDB;
 import com.jbpark.utility.JLogger;
 
 import jbpark.utility.SuffixChecker;
@@ -32,6 +36,8 @@ import jbpark.utility.SuffixChecker;
  */
 public class DaBang {
 	private static Logger logger = JLogger.getLogger();
+	
+	private static Connection conn = JB_DabangDB.getConnection();
 
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
@@ -102,12 +108,40 @@ public class DaBang {
 
 	private void storeIntoMariaDb(String tea, 
 			int teaCount, int 고객id) {
-		// TODO Auto-generated method stub
-		
+		String iSql = "insert into 상품주문"
+				+ "(상품id, 고객id, 주문수량) values (?,?,?)";
+		try {
+			var iPs = conn.prepareStatement(iSql);
+			int 상품id = get상품IDfromDB(tea);
+			
+			iPs.setInt(1, 상품id);
+			iPs.setInt(2, 고객id);
+			iPs.setInt(3, teaCount);
+			
+			int inserted = iPs.executeUpdate();
+			logger.config("주문 DB 저장 건수: " + inserted);
+			logger.config(tea + " 구매, 고객ID: " + 고객id 
+					+ ", " + teaCount);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
 	}
 
-	private int get고객ID(Scanner scanner) {
-		// TODO Auto-generated method stub
+	private int get상품IDfromDB(String tea) {
+		String sql = "select 상품ID from 전통차 "
+				+ "where 전통차.차이름 = ?";
+		try {
+			var ps = conn.prepareStatement(sql);
+			ps.setString(1, tea);
+			ResultSet rs = ps.executeQuery();
+			if (rs != null && rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
 		return 0;
 	}
 
