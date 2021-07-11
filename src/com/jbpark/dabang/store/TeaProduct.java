@@ -22,7 +22,7 @@ public class TeaProduct implements Comparable<TeaProduct> {
 		TeaProduct[] products = new TeaProduct[3];
 
 		// @formatter:off
-		products[0] = new TeaProduct(TeaType.감잎차, 
+		products[0] = new TeaProduct(TeaType.감잎, 
 				new BigDecimal(1_2000), LocalDate.of(2020, 12, 2),
 				LocalDate.of(2020, 10, 20), 4.1f);
 		products[1] = new TeaProduct(TeaType.율무차, 
