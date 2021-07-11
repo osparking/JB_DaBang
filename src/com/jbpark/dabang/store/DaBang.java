@@ -48,6 +48,8 @@ public class DaBang {
 					} catch (InterruptedException e) {}
 				}
 			}
+		} finally {
+			logger.removeHandler(null);
 		}
 	}
 
@@ -77,14 +79,16 @@ public class DaBang {
 		if (type == null)
 			System.out.println("안녕히 가십시오.");
 		else {
+			int teaCount = getTeaCount(scanner);
+			
 			String tea = type.name();
 			int idx = tea.length() - 1;
 			int cp = tea.codePointAt(idx);
 			String msg = "당신이 주문한 '" 
 					+ tea
 					+ (SuffixChecker.has받침(cp, 
-						tea.substring(idx)) ? "'을" : "'를") 
-				+ " 준비할께요.";
+						tea.substring(idx)) ? "'을 " : "'를 ") 
+				+ teaCount + "잔 준비할께요.";
 			DateTimeFormatter dtf 
 				= DateTimeFormatter.ofPattern("HH:mm");
 			String timeLabel = LocalTime.now().format(dtf);
@@ -92,6 +96,26 @@ public class DaBang {
 			System.out.println(msg);
 		}
 		Toolkit.getDefaultToolkit().beep();
+	}
+
+	private int getTeaCount(Scanner scanner) {
+		int count = 1;
+		System.out.print("몇 잔을 원하십니까? : ");
+		while (true) {
+			String line = null;
+			try {
+				if (scanner.hasNextLine()) {
+					line = scanner.nextLine();
+					count = Integer.parseInt(line.trim());
+					break;
+				}
+			} catch(NumberFormatException e) {
+				System.out.println("입력된 '" + line.trim()
+						+ "'은 부적절합니다.");
+				System.out.print("다시 입력하십시오 : ");
+			}
+		}
+		return count;
 	}
 
 	/**
