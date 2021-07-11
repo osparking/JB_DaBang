@@ -76,12 +76,15 @@ public class DaBang {
 		if (type == null)
 			System.out.println("안녕히 가십시오.");
 		else {
-			int teaCount = getTeaCount(scanner);
+			int teaCount = geIntegerValue(scanner,
+					"몇 잔을 원하십니까? : ", "구매 수량");
+			int 고객ID = geIntegerValue(scanner,
+					"고객님 ID는 무엇입니까? : ", "고객ID");
 			
 			String tea = type.name();
 			int idx = tea.length() - 1;
 			int cp = tea.codePointAt(idx);
-			String msg = "당신이 주문한 '" 
+			String msg = 고객ID + "번 고객님의 '" 
 					+ tea
 					+ (SuffixChecker.has받침(cp, 
 						tea.substring(idx)) ? "'을 " : "'를 ") 
@@ -90,16 +93,31 @@ public class DaBang {
 				= DateTimeFormatter.ofPattern("HH:mm");
 			String timeLabel = LocalTime.now().format(dtf);
 			logger.info(msg + ", 주문 시각: " + timeLabel);
+			
+			storeIntoMariaDb(tea, teaCount, 고객ID);
 			System.out.println(msg);
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
 
-	private int getTeaCount(Scanner scanner) {
+	private void storeIntoMariaDb(String tea, 
+			int teaCount, int 고객id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private int get고객ID(Scanner scanner) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	private int geIntegerValue(Scanner scanner,
+			String qLong, String qNoun) {
 		int count = 1;
-		System.out.print("몇 잔을 원하십니까? : ");
+		System.out.println(qLong);
 		while (true) {
 			String line = null;
+			System.out.print(qNoun + " : ");
 			try {
 				if (scanner.hasNextLine()) {
 					line = scanner.nextLine();
@@ -107,9 +125,9 @@ public class DaBang {
 					break;
 				}
 			} catch(NumberFormatException e) {
-				System.out.println("입력된 '" + line.trim()
-						+ "'은 부적절합니다.");
-				System.out.print("다시 입력하십시오 : ");
+				System.out.println("입력된 " + qNoun + " '" 
+						+ line.trim() + "'은 부적절합니다.");
+				System.out.println("다시 입력하십시오...");
 			}
 		}
 		return count;
