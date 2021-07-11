@@ -1,18 +1,16 @@
 package com.jbpark.dabang.store;
 
 import java.awt.Toolkit;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.utility.TeaType;
-import com.jbpark.utility.JB_FileHandler;
+import com.jbpark.utility.JLogger;
 
 import jbpark.utility.SuffixChecker;
 
@@ -33,26 +31,8 @@ import jbpark.utility.SuffixChecker;
  *
  */
 public class DaBang {
-	private static Logger logger 
-		= Logger.getLogger("com.jbpark.dabang");
-	{
-		logger.setLevel(Level.INFO);
-		logger.setUseParentHandlers(false);
-		int LOG_ROTATION_COUNT = 10;
-		JB_FileHandler handler;
-		try {
-			String logFile = "D:/LOG/JB_Dabang"; 
-			System.out.println("로그파일: " 
-					+ logFile + ".*.log.*");
-			handler = new JB_FileHandler(
-					logFile + ".%g.log", 0, 
-					LOG_ROTATION_COUNT);
-			handler.setLevel(Level.INFO);
-			logger.addHandler(handler);
-		} catch (SecurityException | IOException e) {
-			e.printStackTrace();
-		}
-	}
+	private static Logger logger = JLogger.getLogger();
+
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
 		try (Scanner scanner = new Scanner(System.in)) {
