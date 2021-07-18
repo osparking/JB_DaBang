@@ -13,6 +13,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.module.AddressMan;
+import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
 import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
@@ -56,12 +57,14 @@ public class DaBang {
 					} catch (InterruptedException e) {}
 				}
 			}
+		} catch (StopSearchingException e) {
+			logger.info(e.getMessage());
 		} finally {
 			logger.removeHandler(null);
 		}
 	}
 
-	private void serveOneCustomer(Scanner scanner) {
+	private void serveOneCustomer(Scanner scanner) throws StopSearchingException {
 		System.out.println("다음 손님 어서오세요...");
 		System.out.println("J.B.차방이 당신을 환영합니다");
 
@@ -87,41 +90,42 @@ public class DaBang {
 		if (type == null)
 			System.out.println("안녕히 가십시오.");
 		else {
-			int teaCount = Utility.getIntegerValue(scanner,
-					"몇 잔을 원하십니까? : ", "구매 수량");
-			int 고객ID = Utility.getIntegerValue(scanner,
-					"고객님 ID는 무엇입니까? : ", "고객ID");
-			
-			String tea = type.name();
-			int idx = tea.length() - 1;
-			int cp = tea.codePointAt(idx);
-			String msg = 고객ID + "번 고객님의 '" 
-					+ tea
-					+ (SuffixChecker.has받침(cp, 
-						tea.substring(idx)) ? "'을 " : "'를 ") 
-				+ teaCount + "잔 준비할께요.";
-			/**
-			 * 고객 주소 입력
-			 */
 			try {
+				int teaCount = Utility.getIntegerValue(scanner,
+						"몇 잔을 원하십니까? : ", "구매 수량");
+				int 고객ID = Utility.getIntegerValue(scanner,
+						"고객님 ID는 무엇입니까? : ", "고객ID");
+				
+				String tea = type.name();
+				int idx = tea.length() - 1;
+				int cp = tea.codePointAt(idx);
+				String msg = 고객ID + "번 고객님의 '" 
+						+ tea
+						+ (SuffixChecker.has받침(cp, 
+							tea.substring(idx)) ? "'을 " : "'를 ") 
+					+ teaCount + "잔 준비할께요.";
+				/**
+				 * 고객 주소 입력
+				 */
 				acquireCustomerAddress(scanner, 고객ID);
-			} catch (NoAddressInputException e) {
-				System.out.println(e.getMessage());
+				DateTimeFormatter dtf 
+				= DateTimeFormatter.ofPattern("HH:mm");
+				String timeLabel = LocalTime.now().format(dtf);
+				logger.info(msg + ", 주문 시각: " + timeLabel);
+				
+				storeIntoMariaDb(tea, teaCount, 고객ID);
+				System.out.println(msg);
+			} catch (NoInputException e) {
+				System.out.println(e.getMessage() +
+						" 입력을 원하지 않습니다.");
 			}
 			
-			DateTimeFormatter dtf 
-				= DateTimeFormatter.ofPattern("HH:mm");
-			String timeLabel = LocalTime.now().format(dtf);
-			logger.info(msg + ", 주문 시각: " + timeLabel);
-			
-			storeIntoMariaDb(tea, teaCount, 고객ID);
-			System.out.println(msg);
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
 
 	private void acquireCustomerAddress(Scanner scanner, int 고객id)
-			throws  NoAddressInputException{
+			throws  NoInputException, StopSearchingException {
 		AddressMan aMan = new AddressMan();
 		
 		try {
@@ -131,16 +135,19 @@ public class DaBang {
 			}
 			showResult(searchResult);
 			int selection = Utility.getIntegerValue(scanner, 
-					"도로명 주소 번호를 입력하세요.", "주소 번호", false);
-			System.out.println("선택한 주소: " + searchResult.getAddresses()[selection - 1]);
+					"도로명 주소 번호를 입력하세요.", 
+					"주소 번호(1~" + searchResult.getAddressCount(),
+					true);
+			System.out.println("선택한 주소: " +
+					searchResult.getAddresses()[selection - 1]);
 			System.out.println("상세주소를 입력하세요.");
 			System.out.print("상세주소: ");
 			if (scanner.hasNextLine()) {
 				String detailedAddr = scanner.nextLine();
 				System.out.println("입력한 상세주소: " + detailedAddr);
 			}
-		} catch(StopSearchingException e) {
-			throw new NoAddressInputException("고객 주소 입력 불원...");
+		} catch(NoInputException e) {
+			throw new NoInputException("고객 주소");
 		}
 		
 	}
