@@ -12,6 +12,10 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.jbpark.dabang.module.AddressMan;
+import com.jbpark.dabang.module.RoadAddress;
+import com.jbpark.dabang.module.SearchResult;
+import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
 import com.jbpark.utility.JB_DabangDB;
@@ -96,6 +100,15 @@ public class DaBang {
 					+ (SuffixChecker.has받침(cp, 
 						tea.substring(idx)) ? "'을 " : "'를 ") 
 				+ teaCount + "잔 준비할께요.";
+			/**
+			 * 고객 주소 입력
+			 */
+			try {
+				acquireCustomerAddress(scanner, 고객ID);
+			} catch (NoAddressInputException e) {
+				System.out.println(e.getMessage());
+			}
+			
 			DateTimeFormatter dtf 
 				= DateTimeFormatter.ofPattern("HH:mm");
 			String timeLabel = LocalTime.now().format(dtf);
@@ -105,6 +118,48 @@ public class DaBang {
 			System.out.println(msg);
 		}
 		Toolkit.getDefaultToolkit().beep();
+	}
+
+	private void acquireCustomerAddress(Scanner scanner, int 고객id)
+			throws  NoAddressInputException{
+		AddressMan aMan = new AddressMan();
+		
+		try {
+			SearchResult searchResult = aMan.search(scanner);
+			for (RoadAddress ra : searchResult.getAddresses()) {
+				if (ra != null) logger.config(ra.toString());
+			}
+			showResult(searchResult);
+			int selection = Utility.getIntegerValue(scanner, 
+					"도로명 주소 번호를 입력하세요.", "주소 번호", false);
+			System.out.println("선택한 주소: " + searchResult.getAddresses()[selection - 1]);
+			System.out.println("상세주소를 입력하세요.");
+			System.out.print("상세주소: ");
+			if (scanner.hasNextLine()) {
+				String detailedAddr = scanner.nextLine();
+				System.out.println("입력한 상세주소: " + detailedAddr);
+			}
+		} catch(StopSearchingException e) {
+			throw new NoAddressInputException("고객 주소 입력 불원...");
+		}
+		
+	}
+
+	private void showResult(SearchResult searchResult) {
+		String msg = "표시 행: " + searchResult.getAddressCount() +
+					 ", 전체 행: " + searchResult.getTotalRow();
+		
+		logger.config(msg);
+		System.out.println(msg);
+		
+		RoadAddress[] addresses = searchResult.getAddresses();
+		for (int i = 0; i < addresses.length; i++) {
+			if (addresses[i] == null) {
+				searchResult.setAddressCount(i);
+				break;
+			}
+			System.out.println("\t" + (i + 1) + addresses[i]);
+		}			
 	}
 
 	private void storeIntoMariaDb(String tea, 
