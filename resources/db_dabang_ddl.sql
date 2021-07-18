@@ -52,3 +52,14 @@ CREATE TABLE `상품주문` (
   CONSTRAINT `주문_상품ID_FK` FOREIGN KEY (`상품ID`) REFERENCES `전통차` (`상품ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
+-- jb_dabang.고객단지 definition
+
+CREATE TABLE `고객단지` (
+  `단지번호` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `관리번호` decimal(25,0) NOT NULL,
+  `도로명주소` varchar(100) DEFAULT NULL COMMENT '경기도 수원시 팔달구 권광로364번길 7-2(우만동,현대아파트)',
+  PRIMARY KEY (`단지번호`),
+  UNIQUE KEY `고객단지_un` (`관리번호`),
+  KEY `고객단지_관리번호_IDX` (`관리번호`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+
