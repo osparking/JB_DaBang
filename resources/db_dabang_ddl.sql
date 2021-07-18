@@ -63,3 +63,16 @@ CREATE TABLE `고객단지` (
   KEY `고객단지_관리번호_IDX` (`관리번호`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
+-- jb_dabang.고객주소 definition
+
+CREATE TABLE `고객주소` (
+  `주소번호` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `고객ID` int(10) unsigned NOT NULL,
+  `단지번호` int(10) unsigned NOT NULL,
+  `상세주소` varchar(40) DEFAULT NULL COMMENT '101동 1503호',
+  PRIMARY KEY (`고객ID`,`주소번호`),
+  KEY `고객주소_단지번호_FK` (`단지번호`),
+  KEY `고객주소_주소번호_IDX` (`주소번호`) USING BTREE,
+  CONSTRAINT `고객주소_고객ID_FK` FOREIGN KEY (`고객ID`) REFERENCES `전통고객` (`고객ID`),
+  CONSTRAINT `고객주소_단지번호_FK` FOREIGN KEY (`단지번호`) REFERENCES `고객단지` (`단지번호`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
