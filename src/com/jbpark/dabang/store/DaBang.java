@@ -4,6 +4,7 @@ import java.awt.Toolkit;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -165,20 +166,47 @@ public class DaBang {
 		
 		if (단지번호 < 1) {
 			// 비등록이면, 고객단지 등록(삽입)
-			단지번호 = save고객단지번호(address.getMgmtNumber());
+			단지번호 = save고객단지(address);
 		}
 		// 고객주소 행 삽입(고객단지자동번호 등 사용)
 		// 고객id, 단지번호, detailedAddr
-		save고객주소(고객id, 단지번호, address, detailedAddr);
+		save고객주소(고객id, 단지번호, detailedAddr);
 	}
 
-	private void save고객주소(int 고객id, int 단지번호, 
-			RoadAddress address, String detailedAddr) {
+	private int save고객주소(int 고객id, int 단지번호, 
+			String detailedAddr) {
+		String iSql = String.format("insert into "
+				+ "고객주소(고객id, 단지번호, 상세주소) "
+				+ "values (%s, %s, '%s');",
+				고객id, 단지번호, detailedAddr);
 		
+		try (var stmt = conn.createStatement()){
+			return stmt.executeUpdate(iSql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}		
+		return 0;	
 	}
 
-	private int save고객단지번호(String mgmtNumber) {
-		// TODO Auto-generated method stub
+	private int save고객단지(RoadAddress address) {
+		String iSql = String.format("insert into 고객단지"
+				+ "(관리번호, 도로명주소) values ('%s', '%s');",
+				address.getMgmtNumber(), 
+				address.getRoadName());
+		ResultSet rs = null;
+		
+		try (var stmt = conn.createStatement()){
+			stmt.executeUpdate(iSql, 
+					Statement.RETURN_GENERATED_KEYS);
+			rs = stmt.getGeneratedKeys();
+			if (rs != null && rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}		
 		return 0;
 	}
 
