@@ -175,7 +175,17 @@ public class DaBang {
 
 	private int save고객주소(int 고객id, int 단지번호, 
 			String detailedAddr) {
-	
+		String iSql = String.format("insert into "
+				+ "고객주소(고객id, 단지번호, 상세주소) "
+				+ "values (%s, %s, '%s');",
+				고객id, 단지번호, detailedAddr);
+		
+		try (var stmt = conn.createStatement()){
+			return stmt.executeUpdate(iSql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}		
 		return 0;	
 	}
 
