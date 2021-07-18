@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
 import com.jbpark.utility.JB_DabangDB;
 import com.jbpark.utility.JLogger;
@@ -82,9 +83,9 @@ public class DaBang {
 		if (type == null)
 			System.out.println("안녕히 가십시오.");
 		else {
-			int teaCount = geIntegerValue(scanner,
+			int teaCount = Utility.getIntegerValue(scanner,
 					"몇 잔을 원하십니까? : ", "구매 수량");
-			int 고객ID = geIntegerValue(scanner,
+			int 고객ID = Utility.getIntegerValue(scanner,
 					"고객님 ID는 무엇입니까? : ", "고객ID");
 			
 			String tea = type.name();
