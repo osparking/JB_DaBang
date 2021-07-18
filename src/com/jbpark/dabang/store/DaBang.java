@@ -49,16 +49,18 @@ public class DaBang {
 		var jbDabang = new DaBang();
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
-				jbDabang.serveOneCustomer(scanner);
-				for (int i = 0; i<3; i++) {
-					System.out.println(".");
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {}
+				try {
+					jbDabang.serveOneCustomer(scanner);
+					for (int i = 0; i<3; i++) {
+						System.out.println(".");
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {}
+					}
+				} catch (StopSearchingException e) {
+					logger.info(e.getMessage());
 				}
 			}
-		} catch (StopSearchingException e) {
-			logger.info(e.getMessage());
 		} finally {
 			logger.removeHandler(null);
 		}
@@ -130,30 +132,76 @@ public class DaBang {
 		
 		try {
 			SearchResult searchResult = aMan.search(scanner);
-			for (RoadAddress ra : searchResult.getAddresses()) {
+			RoadAddress[] addresses = searchResult.getAddresses();
+			for (RoadAddress ra : addresses) {
 				if (ra != null) logger.config(ra.toString());
 			}
 			showResult(searchResult);
-			int selection = Utility.getIntegerValue(scanner, 
+			int idx = Utility.getIntegerValue(scanner, 
 					"도로명 주소 번호를 입력하세요.", 
-					"주소 번호(1~" + searchResult.getAddressCount(),
+					"주소 번호(1~" + searchResult.getAddrCount() + ")",
 					true);
-			System.out.println("선택한 주소: " +
-					searchResult.getAddresses()[selection - 1]);
+			System.out.println("선택한 주소: " + addresses[idx - 1]);
 			System.out.println("상세주소를 입력하세요.");
 			System.out.print("상세주소: ");
+			
+			String detailedAddr = "";
+			
 			if (scanner.hasNextLine()) {
-				String detailedAddr = scanner.nextLine();
+				detailedAddr = scanner.nextLine();
 				System.out.println("입력한 상세주소: " + detailedAddr);
 			}
+			save단지번호_주소(고객id, detailedAddr, 
+					addresses[idx - 1]);
 		} catch(NoInputException e) {
 			throw new NoInputException("고객 주소");
 		}
+	}
+
+	private void save단지번호_주소(int 고객id, 
+			String detailedAddr, RoadAddress address) {
+		// 관리번호 고객단지 등록 여부 판단
+		int 단지번호 = get고객단지번호(address.getMgmtNumber());
+		
+		if (단지번호 < 1) {
+			// 비등록이면, 고객단지 등록(삽입)
+			단지번호 = save고객단지번호(address.getMgmtNumber());
+		}
+		// 고객주소 행 삽입(고객단지자동번호 등 사용)
+		// 고객id, 단지번호, detailedAddr
+		save고객주소(고객id, 단지번호, address, detailedAddr);
+	}
+
+	private void save고객주소(int 고객id, int 단지번호, 
+			RoadAddress address, String detailedAddr) {
 		
 	}
 
+	private int save고객단지번호(String mgmtNumber) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	private int get고객단지번호(String mgmtNumber) {
+		String sql = "select c.단지번호 "
+				+ "from 고객단지 c "
+				+ "where c.관리번호 = ?";
+		try {
+			var ps = conn.prepareStatement(sql);
+			ps.setString(1, mgmtNumber);
+			ResultSet rs = ps.executeQuery();
+			if (rs != null && rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
+		return 0;
+	}
+
 	private void showResult(SearchResult searchResult) {
-		String msg = "표시 행: " + searchResult.getAddressCount() +
+		String msg = "표시 행: " + searchResult.getAddrCount() +
 					 ", 전체 행: " + searchResult.getTotalRow();
 		
 		logger.config(msg);
@@ -206,28 +254,6 @@ public class DaBang {
 			logger.severe(e.getMessage());
 		}
 		return 0;
-	}
-
-	private int geIntegerValue(Scanner scanner,
-			String qLong, String qNoun) {
-		int count = 1;
-		System.out.println(qLong);
-		while (true) {
-			String line = null;
-			System.out.print(qNoun + " : ");
-			try {
-				if (scanner.hasNextLine()) {
-					line = scanner.nextLine();
-					count = Integer.parseInt(line.trim());
-					break;
-				}
-			} catch(NumberFormatException e) {
-				System.out.println("입력된 " + qNoun + " '" 
-						+ line.trim() + "'은 부적절합니다.");
-				System.out.println("다시 입력하십시오...");
-			}
-		}
-		return count;
 	}
 
 	/**
