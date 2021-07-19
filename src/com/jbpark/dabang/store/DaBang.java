@@ -14,7 +14,6 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.module.AddressMan;
-import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
 import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
@@ -131,32 +130,28 @@ public class DaBang {
 			throws  NoInputException, StopSearchingException {
 		AddressMan aMan = new AddressMan();
 		
-		try {
-			SearchResult searchResult = aMan.search(scanner);
-			RoadAddress[] addresses = searchResult.getAddresses();
-			for (RoadAddress ra : addresses) {
-				if (ra != null) logger.config(ra.toString());
-			}
-			showResult(searchResult);
-			int idx = Utility.getIntegerValue(scanner, 
-					"도로명 주소 번호를 입력하세요.", 
-					"주소 번호(1~" + searchResult.getAddrCount() + ")",
-					true);
-			System.out.println("선택한 주소: " + addresses[idx - 1]);
-			System.out.println("상세주소를 입력하세요.");
-			System.out.print("상세주소: ");
-			
-			String detailedAddr = "";
-			
-			if (scanner.hasNextLine()) {
-				detailedAddr = scanner.nextLine();
-				System.out.println("입력한 상세주소: " + detailedAddr);
-			}
-			save단지번호_주소(고객id, detailedAddr, 
-					addresses[idx - 1]);
-		} catch(NoInputException e) {
-			throw new NoInputException("고객 주소");
+		SearchResult searchResult = aMan.search(scanner);
+		RoadAddress[] addresses = searchResult.getAddresses();
+		for (RoadAddress ra : addresses) {
+			if (ra != null) logger.config(ra.toString());
 		}
+		showResult(searchResult);
+		int idx = Utility.getIntegerValue(scanner, 
+				"도로명 주소 번호를 입력하세요.", 
+				"주소 번호(1~" + searchResult.getAddressCount() + ")",
+				true);
+		System.out.println("선택한 주소: " + addresses[idx - 1]);
+		System.out.println("상세주소를 입력하세요.");
+		System.out.print("상세주소: ");
+		
+		String detailedAddr = "";
+		
+		if (scanner.hasNextLine()) {
+			detailedAddr = scanner.nextLine();
+			System.out.println("입력한 상세주소: " + detailedAddr);
+		}
+		save단지번호_주소(고객id, detailedAddr, 
+				addresses[idx - 1]);
 	}
 
 	private void save단지번호_주소(int 고객id, 
@@ -229,7 +224,7 @@ public class DaBang {
 	}
 
 	private void showResult(SearchResult searchResult) {
-		String msg = "표시 행: " + searchResult.getAddrCount() +
+		String msg = "표시 행: " + searchResult.getAddressCount() +
 					 ", 전체 행: " + searchResult.getTotalRow();
 		
 		logger.config(msg);

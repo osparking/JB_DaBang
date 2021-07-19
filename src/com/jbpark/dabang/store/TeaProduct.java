@@ -18,6 +18,7 @@ public class TeaProduct implements Comparable<TeaProduct> {
 	private float 고객평점;
 	private String 제품설명;
 
+	/*
 	public static void main(String[] args) {
 		TeaProduct[] products = new TeaProduct[3];
 
@@ -48,7 +49,7 @@ public class TeaProduct implements Comparable<TeaProduct> {
 			System.out.println(product);
 		}
 	}
-
+*/
 	/**
 	 * 추후 제품을 정렬할 중요한 4 필드를 입력받아 제품을 생성한다.
 	 * @param teaType
