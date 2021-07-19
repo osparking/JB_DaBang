@@ -1,1 +1,0 @@
-  git log --pretty="%C(Yellow)%h  (%C(Green)%cr%C(reset))%x09 %C(reset)%s" -7
