@@ -14,6 +14,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.module.AddressMan;
+import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
 import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
@@ -43,7 +44,7 @@ import jbpark.utility.SuffixChecker;
 public class DaBang {
 	private static Logger logger = JLogger.getLogger();
 	
-	private static Connection conn = JB_DabangDB.getConnection();
+	private static Connection conn = JB_DabangDB.getConnection(logger);
 
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
@@ -121,7 +122,6 @@ public class DaBang {
 				System.out.println(e.getMessage() +
 						" 입력을 원하지 않습니다.");
 			}
-			
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
@@ -138,7 +138,7 @@ public class DaBang {
 		showResult(searchResult);
 		int idx = Utility.getIntegerValue(scanner, 
 				"도로명 주소 번호를 입력하세요.", 
-				"주소 번호(1~" + searchResult.getAddressCount() + ")",
+				"주소 번호(1~" + searchResult.getAddrCount() + ")",
 				true);
 		System.out.println("선택한 주소: " + addresses[idx - 1]);
 		System.out.println("상세주소를 입력하세요.");
@@ -224,7 +224,7 @@ public class DaBang {
 	}
 
 	private void showResult(SearchResult searchResult) {
-		String msg = "표시 행: " + searchResult.getAddressCount() +
+		String msg = "표시 행: " + searchResult.getAddrCount() +
 					 ", 전체 행: " + searchResult.getTotalRow();
 		
 		logger.config(msg);
