@@ -20,7 +20,6 @@ import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
-import com.jbpark.utility.JB_DabangDB;
 import com.jbpark.utility.JLogger;
 
 import jbpark.utility.SuffixChecker;
@@ -44,7 +43,12 @@ import jbpark.utility.SuffixChecker;
 public class DaBang {
 	private static Logger logger = JLogger.getLogger();
 	
-	private static Connection conn = JB_DabangDB.getConnection(logger);
+	private static Connection conn = null;
+	static {
+		conn = AddressMan.getConnection();
+		if (conn != null)
+			logger.info("Connection is successful");
+	};
 
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
@@ -126,10 +130,52 @@ public class DaBang {
 		Toolkit.getDefaultToolkit().beep();
 	}
 
+	/**
+	 * 고객 주소 선택 받아 상세 주소 입력 및 DB 저장
+	 * @param scanner
+	 * @param 고객id
+	 * @throws NoInputException
+	 * @throws StopSearchingException
+	 */
 	private void acquireCustomerAddress(Scanner scanner, int 고객id)
 			throws  NoInputException, StopSearchingException {
 		AddressMan aMan = new AddressMan();
 		
+		// 고객 입력 주소 목록 표시
+		aMan.displayCustomerAddresses(고객id, logger);
+		// 세 가지 옵션 중 택일 
+		// - 새 주소 입력, 기존 주소 활용, 기존 주소 관리
+		StringBuffer sBuf = new StringBuffer();
+		sBuf.append("다음 옵션 중 하나를 선택하세요.\n");
+		sBuf.append("\t1. 새 주소 입력\n");
+		sBuf.append("\t2. 위 주소 사용(세부 주소 변경 가능)\n");
+		sBuf.append("\t3. 위 주소 관리(삭제 혹은 갱신)\n");
+		
+		int option = Utility.getIntegerValue(scanner, 
+				sBuf.toString(), "주소 옵션(1~3)", true);
+		switch (option) {
+		case 1: // 새 주소
+			acquireNewAddress(scanner, aMan, 고객id);
+			break;
+			
+		case 2: // 구 주소 사용
+//			useOldAddress(scanner, aMan, 고객id);
+			break;
+			
+		case 3: // 구 주소 관리
+//			manageOldAddresses(scanner, aMan, 고객id);
+			break;
+			
+		default:
+			break;
+		}
+	}
+
+	private void acquireNewAddress(Scanner scanner, 
+			AddressMan aMan, int 고객id)	
+					throws StopSearchingException, 
+							NoInputException {
+		// 새 주소 입력
 		SearchResult searchResult = aMan.search(scanner);
 		RoadAddress[] addresses = searchResult.getAddresses();
 		for (RoadAddress ra : addresses) {
@@ -151,7 +197,7 @@ public class DaBang {
 			System.out.println("입력한 상세주소: " + detailedAddr);
 		}
 		save단지번호_주소(고객id, detailedAddr, 
-				addresses[idx - 1]);
+				addresses[idx - 1]);		
 	}
 
 	private void save단지번호_주소(int 고객id, 
