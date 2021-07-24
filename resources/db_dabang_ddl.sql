@@ -76,3 +76,8 @@ CREATE TABLE `고객주소` (
   CONSTRAINT `고객주소_고객ID_FK` FOREIGN KEY (`고객ID`) REFERENCES `전통고객` (`고객ID`),
   CONSTRAINT `고객주소_단지번호_FK` FOREIGN KEY (`단지번호`) REFERENCES `고객단지` (`단지번호`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+-- 주문 테이블 구조변경(2 열 추가)
+ALTER TABLE jb_dabang.상품주문 ADD 단지번호 INT UNSIGNED NULL COMMENT '배송지 단지';
+ALTER TABLE jb_dabang.상품주문 ADD 상세주소 varchar(40) NULL COMMENT '배송지 주소';
+ALTER TABLE jb_dabang.상품주문 ADD CONSTRAINT 상품주문_단지_FK FOREIGN KEY (단지번호) REFERENCES jb_dabang.고객단지(단지번호) ON DELETE RESTRICT ON UPDATE RESTRICT;
