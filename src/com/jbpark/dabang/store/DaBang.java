@@ -116,13 +116,13 @@ public class DaBang {
 				/**
 				 * 고객 주소 입력
 				 */
-				acquireCustomerAddress(scanner, 고객ID);
+				DeliverAddress 배송주소 = get배송주소(scanner, 고객ID);
 				DateTimeFormatter dtf 
 				= DateTimeFormatter.ofPattern("HH:mm");
 				String timeLabel = LocalTime.now().format(dtf);
 				logger.info(msg + ", 주문 시각: " + timeLabel);
 				
-				storeIntoMariaDb(tea, teaCount, 고객ID);
+				storeIntoMariaDb(tea, teaCount, 고객ID, 배송주소);
 				System.out.println(msg);
 			} catch (NoInputException e) {
 				System.out.println(e.getMessage() +
@@ -139,8 +139,9 @@ public class DaBang {
 	 * @throws NoInputException
 	 * @throws StopSearchingException
 	 */
-	private void acquireCustomerAddress(Scanner scanner, int 고객id)
+	private DeliverAddress get배송주소(Scanner scanner, int 고객id)
 			throws  NoInputException, StopSearchingException {
+		DeliverAddress 배송주소 = null;
 		AddressMan aMan = new AddressMan();
 		
 		// 고객 입력 주소 목록 표시
@@ -157,12 +158,11 @@ public class DaBang {
 				sBuf.toString(), "주소 옵션(1~3)", true);
 		switch (option) {
 		case 1: // 새 주소
-			acquireNewAddress(scanner, aMan, 고객id);
-		 새 주소를 주문 정보에 저장
+			배송주소 = acquireNewAddress(scanner, aMan, 고객id);
 			break;
 			
 		case 2: // 구 주소 사용
-			useOldAddress(addresses, scanner, aMan, 고객id);
+			배송주소 = useOldAddress(addresses, scanner, aMan, 고객id);
 			break;
 			
 		case 3: // 구 주소 관리
@@ -172,18 +172,19 @@ public class DaBang {
 		default:
 			break;
 		}
+		return 배송주소;
 	}
 
-	private void useOldAddress(ArrayList<CustomerAddress> addresses, 
+	private DeliverAddress useOldAddress(ArrayList<CustomerAddress> addresses, 
 			Scanner scanner, AddressMan aMan, int 고객id) {
 		// 사용할 과거 주소 번호 요구
 		// 세부 주소 변경의향 확인
 		// 필요하면, 새 세부 주소 요구
 		// 단지번호, 세부 주소 등을 저장
-		
+		return null;
 	}
 
-	private void acquireNewAddress(Scanner scanner, 
+	private DeliverAddress acquireNewAddress(Scanner scanner, 
 			AddressMan aMan, int 고객id)	
 					throws StopSearchingException, 
 							NoInputException {
@@ -202,17 +203,27 @@ public class DaBang {
 		System.out.println("상세주소를 입력하세요.");
 		System.out.print("상세주소: ");
 		
-		String detailedAddr = "";
+		String 상세주소 = "";
 		
 		if (scanner.hasNextLine()) {
-			detailedAddr = scanner.nextLine();
-			System.out.println("입력한 상세주소: " + detailedAddr);
+			상세주소 = scanner.nextLine();
+			System.out.println("입력한 상세주소: " + 상세주소);
 		}
-		save단지번호_주소(고객id, detailedAddr, 
-				addresses[idx - 1]);		
+		int 단지번호 = save단지번호_주소(고객id, 상세주소, 
+				addresses[idx - 1]);
+		return new DeliverAddress(단지번호, 상세주소);
 	}
-
-	private void save단지번호_주소(int 고객id, 
+	
+	private class DeliverAddress {
+		int 단지번호;
+		String 상세주소;
+		public DeliverAddress(int 단지번호, String 상세주소) {
+			this.단지번호 = 단지번호;
+			this.상세주소 = 상세주소;
+		}
+	}
+	
+	private int save단지번호_주소(int 고객id, 
 			String detailedAddr, RoadAddress address) {
 		// 관리번호 고객단지 등록 여부 판단
 		int 단지번호 = get고객단지번호(address.getMgmtNumber());
@@ -224,6 +235,7 @@ public class DaBang {
 		// 고객주소 행 삽입(고객단지자동번호 등 사용)
 		// 고객id, 단지번호, detailedAddr
 		save고객주소(고객id, 단지번호, detailedAddr);
+		return 단지번호;
 	}
 
 	private int save고객주소(int 고객id, int 단지번호, 
@@ -298,10 +310,13 @@ public class DaBang {
 		}			
 	}
 
-	private void storeIntoMariaDb(String tea, 
-			int teaCount, int 고객id) {
+	private void storeIntoMariaDb(String tea, int teaCount, 
+			int 고객id, DeliverAddress 배송주소) {
+		//formatter:off
 		String iSql = "insert into 상품주문"
-				+ "(상품id, 고객id, 주문수량) values (?,?,?)";
+				+ "(상품id, 고객id, 주문수량, 단지번호, 상세주소) "
+				+ "values (?,?,?,?,?)";
+		//formatter:on
 		try {
 			var iPs = conn.prepareStatement(iSql);
 			int 상품id = get상품IDfromDB(tea);
@@ -309,6 +324,8 @@ public class DaBang {
 			iPs.setInt(1, 상품id);
 			iPs.setInt(2, 고객id);
 			iPs.setInt(3, teaCount);
+			iPs.setInt(4, 배송주소.단지번호);
+			iPs.setString(5, 배송주소.상세주소);
 			
 			int inserted = iPs.executeUpdate();
 			logger.config("주문 DB 저장 건수: " + inserted);
