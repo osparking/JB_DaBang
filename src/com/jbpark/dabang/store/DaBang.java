@@ -9,11 +9,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.module.AddressMan;
+import com.jbpark.dabang.module.CustomerAddress;
 import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
 import com.jbpark.dabang.module.SearchResult;
@@ -142,7 +144,7 @@ public class DaBang {
 		AddressMan aMan = new AddressMan();
 		
 		// 고객 입력 주소 목록 표시
-		aMan.displayCustomerAddresses(고객id, logger);
+		var addresses = aMan.displayCustomerAddresses(고객id, logger);
 		// 세 가지 옵션 중 택일 
 		// - 새 주소 입력, 기존 주소 활용, 기존 주소 관리
 		StringBuffer sBuf = new StringBuffer();
@@ -156,10 +158,11 @@ public class DaBang {
 		switch (option) {
 		case 1: // 새 주소
 			acquireNewAddress(scanner, aMan, 고객id);
+		 새 주소를 주문 정보에 저장
 			break;
 			
 		case 2: // 구 주소 사용
-//			useOldAddress(scanner, aMan, 고객id);
+			useOldAddress(addresses, scanner, aMan, 고객id);
 			break;
 			
 		case 3: // 구 주소 관리
@@ -169,6 +172,15 @@ public class DaBang {
 		default:
 			break;
 		}
+	}
+
+	private void useOldAddress(ArrayList<CustomerAddress> addresses, 
+			Scanner scanner, AddressMan aMan, int 고객id) {
+		// 사용할 과거 주소 번호 요구
+		// 세부 주소 변경의향 확인
+		// 필요하면, 새 세부 주소 요구
+		// 단지번호, 세부 주소 등을 저장
+		
 	}
 
 	private void acquireNewAddress(Scanner scanner, 
