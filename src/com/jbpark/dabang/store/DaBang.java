@@ -175,13 +175,43 @@ public class DaBang {
 		return 배송주소;
 	}
 
-	private DeliverAddress useOldAddress(ArrayList<CustomerAddress> addresses, 
+	private DeliverAddress useOldAddress(
+			ArrayList<CustomerAddress> addresses, 
 			Scanner scanner, AddressMan aMan, int 고객id) {
 		// 사용할 과거 주소 번호 요구
+		int idx = -1;
+		while (true) {
+			try {
+				idx = Utility.getIntegerValue(scanner, 
+						"사용할 과거 주소 번호를 입력하세요.", 
+						"주소 번호(1~" + addresses.size() + ")",
+						true);
+				break;
+			} catch (NoInputException e) {
+				System.out.println("입력 내용은 부적절한 주소 번호입니다.");
+			}
+		}
+		idx--;
 		// 세부 주소 변경의향 확인
-		// 필요하면, 새 세부 주소 요구
-		// 단지번호, 세부 주소 등을 저장
-		return null;
+		CustomerAddress addr = addresses.get(idx);
+		System.out.println("[선택한 주소]"); 
+		System.out.println("\t-도로명주소:" + addr.get도로명주소()); 
+		System.out.println("\t-세부주소:" + addr.get상세주소());
+		
+		boolean use그대로 = getUserResponse(
+				"선택한 위 주소를 그대로 사용하겠습니까?", scanner);
+
+		// 새 세부주소 요구
+		DeliverAddress deliAddr = new DeliverAddress(
+				addr.get단지번호(), addr.get상세주소());
+		
+		if (!use그대로) {
+			System.out.println("사용할 '세부주소'를 입력하세요.");
+			System.out.print("세부주소: ");
+			if (scanner.hasNextLine())
+				deliAddr.set상세주소(scanner.nextLine().trim());
+		}
+		return deliAddr;
 	}
 
 	private DeliverAddress acquireNewAddress(Scanner scanner, 
@@ -217,8 +247,15 @@ public class DaBang {
 	private class DeliverAddress {
 		int 단지번호;
 		String 상세주소;
+		/**
+		 * @param 단지번호
+		 * @param 상세주소
+		 */
 		public DeliverAddress(int 단지번호, String 상세주소) {
 			this.단지번호 = 단지번호;
+			this.상세주소 = 상세주소;
+		}
+		public void set상세주소(String 상세주소) {
 			this.상세주소 = 상세주소;
 		}
 	}
