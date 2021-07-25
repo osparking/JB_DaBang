@@ -208,8 +208,11 @@ public class DaBang {
 		if (!use그대로) {
 			System.out.println("사용할 '세부주소'를 입력하세요.");
 			System.out.print("세부주소: ");
-			if (scanner.hasNextLine())
-				deliAddr.set상세주소(scanner.nextLine().trim());
+			if (scanner.hasNextLine()) {
+				String 상세주소 = scanner.nextLine().trim();
+				deliAddr.set상세주소(상세주소);
+				save고객주소(고객id, addr.get단지번호(), 상세주소);
+			}
 		}
 		return deliAddr;
 	}
