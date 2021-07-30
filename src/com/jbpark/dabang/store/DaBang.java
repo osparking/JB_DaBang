@@ -265,14 +265,14 @@ public class DaBang {
 	
 	private int save단지번호_주소(int 고객id, 
 			String detailedAddr, RoadAddress address) {
-		// 관리번호 고객단지 등록 여부 판단
-		int 단지번호 = get고객단지번호(address.getMgmtNumber());
+		// 관리번호 단지주소 등록 여부 판단
+		int 단지번호 = get단지주소번호(address.getMgmtNumber());
 		
 		if (단지번호 < 1) {
-			// 비등록이면, 고객단지 등록(삽입)
-			단지번호 = save고객단지(address);
+			// 비등록이면, 단지주소 등록(삽입)
+			단지번호 = save단지주소(address);
 		}
-		// 고객주소 행 삽입(고객단지자동번호 등 사용)
+		// 고객주소 행 삽입(단지주소자동번호 등 사용)
 		// 고객id, 단지번호, detailedAddr
 		save고객주소(고객id, 단지번호, detailedAddr);
 		return 단지번호;
@@ -294,8 +294,8 @@ public class DaBang {
 		return 0;	
 	}
 
-	private int save고객단지(RoadAddress address) {
-		String iSql = String.format("insert into 고객단지"
+	private int save단지주소(RoadAddress address) {
+		String iSql = String.format("insert into 단지주소"
 				+ "(관리번호, 도로명주소) values ('%s', '%s');",
 				address.getMgmtNumber(), 
 				address.getRoadName());
@@ -315,9 +315,9 @@ public class DaBang {
 		return 0;
 	}
 
-	private int get고객단지번호(String mgmtNumber) {
+	private int get단지주소번호(String mgmtNumber) {
 		String sql = "select c.단지번호 "
-				+ "from 고객단지 c "
+				+ "from 단지주소 c "
 				+ "where c.관리번호 = ?";
 		try {
 			var ps = conn.prepareStatement(sql);
