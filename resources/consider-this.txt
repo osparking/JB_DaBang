@@ -1,3 +1,6 @@
+할일
+    - 고객 주소 저장 때, 우편번호 포함할 것.
+    
 차 종류 enum 에 짧은 별칭 부여
 차 객체 정렬 방법 구현(comparable 혹은 comparator 사용)
 FeedBack 클래스를 불변으로 만든다.
