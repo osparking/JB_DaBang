@@ -22,7 +22,6 @@ import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
-import com.jbpark.utility.CustomerInfo;
 import com.jbpark.utility.JLogger;
 import com.jbpark.utility.SecureMan;
 
@@ -78,8 +77,28 @@ public class DaBang {
 
 	private void serveOneCustomer(Scanner scanner) 
 			throws StopSearchingException {
+		int 고객SN = 0;
+
 		System.out.println("다음 손님 어서오세요...");
-		System.out.println("J.B.차방이 당신을 환영합니다");
+		while (true) {
+			// 고객 가입 옵션 제시
+			optional고객등록(scanner);
+			try {
+				CustomerInfo customer 
+					= getCustomerInfo(scanner); 
+				if (customer != null) {
+					고객SN = customer.get고객SN();
+					System.out.println("J.B.차방이 " +
+							customer.get고객SN() + 
+							"님을 환영합니다");
+					break;
+				}
+			} catch (NoSuch고객Exception e) {
+				System.out.println(e.getMessage());
+				logger.warning(e.getMessage());
+			}
+		}
+		
 
 		TeaType type = null;  
 		
@@ -106,24 +125,6 @@ public class DaBang {
 			try {
 				int teaCount = Utility.getIntegerValue(scanner,
 						"몇 잔을 원하십니까? : ", "구매 수량");
-				int 고객SN = 0;
-				
-				while (true) {
-					// 고객 가입 옵션 제시
-					optional고객등록(scanner);
-					try {
-						CustomerInfo customer 
-							= loginSucceeded(scanner); 
-						if (customer != null) {
-							고객SN = customer.get고객SN();
-							break;
-						}
-					} catch (NoSuch고객Exception e) {
-						System.out.println(e.getMessage());
-						logger.warning(e.getMessage());
-					}
-				}
-				
 				String tea = type.name();
 				int idx = tea.length() - 1;
 				int cp = tea.codePointAt(idx);
@@ -143,6 +144,7 @@ public class DaBang {
 				
 				storeIntoMariaDb(tea, teaCount, 고객SN, 배송주소);
 				System.out.println(msg);
+				고객SN = 0;
 			} catch (NoInputException e) {
 				System.out.println(e.getMessage() +
 						" 입력을 원하지 않습니다.");
@@ -150,19 +152,43 @@ public class DaBang {
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
+	
+	public static CustomerInfo read전통고객(String 고객ID) {
+		String getCustInfo = "select 고객SN, 고객이름, salt, password"
+				+ " from 전통고객 where 고객ID = '" + 고객ID + "'";
+		try {
+			Statement getStmt = conn.createStatement();
+			ResultSet rs = getStmt.executeQuery(getCustInfo);
 
-	private CustomerInfo loginSucceeded(Scanner scanner) 
+			if (rs.next()) {
+				var customer = new CustomerInfo();
+				
+				customer.set고객SN(rs.getInt(1));
+				customer.set고객이름(rs.getString(2));
+				customer.setSalt(rs.getBytes(3));;
+				customer.setPassword(rs.getBytes(4));
+				
+				return customer;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
+		return null;		
+	}	
+
+	private CustomerInfo getCustomerInfo(Scanner scanner) 
 			throws NoSuch고객Exception {
-		System.out.println("다름 로그인 정보를 입력하세요.");	
+		System.out.println("로그인 정보를 입력하세요.");	
 		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ");
 		System.out.print("\t비밀번호: ");
 		if (scanner.hasNext()) {
 			String password = scanner.nextLine().trim();
-			var customer = SecureMan.read전통고객(고객Id);
+			var customer = read전통고객(고객Id);
 			
 			if (customer != null) {
 				boolean goodPwd = SecureMan.passwordVerified
-						(password, customer);
+						(password, customer.getSalt(), customer.getPassword());
 				if (goodPwd) {
 					System.out.println("'" + 고객Id 
 							+ "'님 로그인되었습니다.");
@@ -195,8 +221,32 @@ public class DaBang {
 			String password = Utility.getPassword(scanner);
 			byte[] salt = SecureMan.getSalt(); 
 			byte[] pwdEncd = SecureMan.encryptPassword(password, salt);
-			SecureMan.save전통고객(고객Id, salt, pwdEncd);
+			save전통고객(고객Id, salt, pwdEncd);
 		}
+	}
+	
+	public static int save전통고객(String 고객Id, byte[] salt, byte[] pwdEncd) {
+		//formatter:off
+		String iSql = "insert into 전통고객"
+				+ "(고객ID, 고객이름, salt, password) "
+				+ "values (?, ?, ?, ?);";
+		//formatter:on
+		try {
+			var iPs = conn.prepareStatement(iSql);
+			
+			iPs.setString(1, 고객Id);
+			iPs.setString(2, "아무개");
+			iPs.setBytes(3, salt);
+			iPs.setBytes(4, pwdEncd);
+			
+			int inserted = iPs.executeUpdate();
+			logger.config("생성된 고객ID: " + 고객Id);
+			return inserted;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}	
+		return 0;
 	}
 
 	private int get고객SN(String 고객Id) throws NoSuch고객Exception {
