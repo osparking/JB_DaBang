@@ -23,6 +23,7 @@ import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
 import com.jbpark.utility.JLogger;
+import com.jbpark.utility.SecureMan;
 
 import jbpark.utility.SuffixChecker;
 
@@ -147,16 +148,23 @@ public class DaBang {
 
 	private void optional고객등록(Scanner scanner) {
 		if (getUserResponse("계정이 없으십니까?", scanner)) {
-			String 고객Id = Utility.get고객ID(scanner, "사용할 'ID'를 입력하세요 : ");
-			try {
-				get고객SN(고객Id);
-			} catch (NoSuch고객Exception e) {
-				System.out.print("'" + 고객Id + "'는 사용가능합니다.");
+			String 고객Id = "";
+			String preFix = "사용할";
+			while (true) {
+				고객Id = Utility.get고객ID(scanner, preFix + " 'ID'를 입력하세요 : ");
+				try {
+					get고객SN(고객Id);
+					System.out.println("'" + 고객Id + "'는 사용하실 수 없습니다.");
+					preFix = "다른";
+				} catch (NoSuch고객Exception e) {
+					System.out.print("'" + 고객Id + "'는 사용가능합니다.");
+					break;
+				}
 			}
-			System.out.print("비밀번호를 입력하세요: ");
-			if (scanner.hasNext()) {
-				
-			}
+			String password = Utility.getPassword(scanner);
+			byte[] salt = SecureMan.getSalt(); 
+			byte[] pwdEncd = SecureMan.encryptPassword(password, salt);
+			SecureMan.save전통고객(고객Id, salt, pwdEncd);
 		}
 	}
 
