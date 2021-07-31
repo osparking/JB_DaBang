@@ -22,6 +22,7 @@ import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
 import com.jbpark.dabang.utility.TeaType;
+import com.jbpark.utility.CustomerInfo;
 import com.jbpark.utility.JLogger;
 import com.jbpark.utility.SecureMan;
 
@@ -75,7 +76,8 @@ public class DaBang {
 		}
 	}
 
-	private void serveOneCustomer(Scanner scanner) throws StopSearchingException {
+	private void serveOneCustomer(Scanner scanner) 
+			throws StopSearchingException {
 		System.out.println("다음 손님 어서오세요...");
 		System.out.println("J.B.차방이 당신을 환영합니다");
 
@@ -109,10 +111,9 @@ public class DaBang {
 				while (true) {
 					// 고객 가입 옵션 제시
 					optional고객등록(scanner);
-					String 고객Id = Utility.get고객ID(scanner, "고객ID를 입력하세요 : ");
 					try {
-						고객SN = get고객SN(고객Id);
-						break;
+						if (loginSucceeded(scanner))
+							break;
 					} catch (NoSuch고객Exception e) {
 						System.out.println(e.getMessage());
 						logger.warning(e.getMessage());
@@ -146,15 +147,40 @@ public class DaBang {
 		Toolkit.getDefaultToolkit().beep();
 	}
 
+	private boolean loginSucceeded(Scanner scanner) 
+			throws NoSuch고객Exception {
+		System.out.println("다름 로그인 정보를 입력하세요.");	
+		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ");
+		System.out.print("\t비밀번호: ");
+		if (scanner.hasNext()) {
+			String password = scanner.nextLine().trim();
+			var customer = SecureMan.read전통고객(고객Id);
+			
+			if (customer != null) {
+				boolean goodPwd = SecureMan.passwordVerified
+						(password, customer);
+				if (goodPwd) {
+					int 고객SN = get고객SN(고객Id);
+					return true;
+				}
+			}
+			String msg = "고객ID 혹은 비밀번호 오류입니다.";
+			throw new NoSuch고객Exception(msg);
+		}
+		return false;
+	}
+
 	private void optional고객등록(Scanner scanner) {
 		if (getUserResponse("계정이 없으십니까?", scanner)) {
 			String 고객Id = "";
 			String preFix = "사용할";
 			while (true) {
-				고객Id = Utility.get고객ID(scanner, preFix + " 'ID'를 입력하세요 : ");
+				고객Id = Utility.get고객ID(scanner, 
+						preFix + " 'ID'를 입력하세요 : ");
 				try {
 					get고객SN(고객Id);
-					System.out.println("'" + 고객Id + "'는 사용하실 수 없습니다.");
+					System.out.println("'" + 고객Id 
+							+ "'는 사용하실 수 없습니다.");
 					preFix = "다른";
 				} catch (NoSuch고객Exception e) {
 					System.out.print("'" + 고객Id + "'는 사용가능합니다.");
@@ -179,7 +205,8 @@ public class DaBang {
 			if (rs.next()) {
 				return rs.getInt(1);
 			} else {
-				throw new NoSuch고객Exception(고객Id);
+				String msg = "아이디 '" + 고객Id + "'인 고객은 없습니다.";
+				throw new NoSuch고객Exception(msg);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -259,6 +286,7 @@ public class DaBang {
 					throws StopSearchingException, 
 							NoInputException {
 		// 새 주소 입력
+		System.out.println("배송지 주소를 입력하세요.");
 		SearchResult searchResult = aMan.search(scanner);
 		RoadAddress[] addresses = searchResult.getAddresses();
 		for (RoadAddress ra : addresses) {
