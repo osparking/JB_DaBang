@@ -102,13 +102,23 @@ public class DaBang {
 			try {
 				int teaCount = Utility.getIntegerValue(scanner,
 						"몇 잔을 원하십니까? : ", "구매 수량");
-				int 고객ID = Utility.getIntegerValue(scanner,
-						"고객님 ID는 무엇입니까? : ", "고객ID");
+				int 고객SN = 0;
+				
+				while (true) {
+					String 고객Id = Utility.get고객ID(scanner);
+					try {
+						고객SN = get고객SN(고객Id);
+						break;
+					} catch (NoSuch고객Exception e) {
+						System.out.println(e.getMessage());
+						logger.warning(e.getMessage());
+					}
+				}
 				
 				String tea = type.name();
 				int idx = tea.length() - 1;
 				int cp = tea.codePointAt(idx);
-				String msg = 고객ID + "번 고객님의 '" 
+				String msg = 고객SN + " 고객님의 '" 
 						+ tea
 						+ (SuffixChecker.has받침(cp, 
 							tea.substring(idx)) ? "'을 " : "'를 ") 
@@ -116,13 +126,13 @@ public class DaBang {
 				/**
 				 * 고객 주소 입력
 				 */
-				DeliverAddress 배송주소 = get배송주소(scanner, 고객ID);
+				DeliverAddress 배송주소 = get배송주소(scanner, 고객SN);
 				DateTimeFormatter dtf 
 				= DateTimeFormatter.ofPattern("HH:mm");
 				String timeLabel = LocalTime.now().format(dtf);
 				logger.info(msg + ", 주문 시각: " + timeLabel);
 				
-				storeIntoMariaDb(tea, teaCount, 고객ID, 배송주소);
+				storeIntoMariaDb(tea, teaCount, 고객SN, 배송주소);
 				System.out.println(msg);
 			} catch (NoInputException e) {
 				System.out.println(e.getMessage() +
@@ -132,52 +142,53 @@ public class DaBang {
 		Toolkit.getDefaultToolkit().beep();
 	}
 
+	private int get고객SN(String 고객Id) throws NoSuch고객Exception {
+		String getSNsql = "select 고객SN "
+				+ "from 전통고객 "
+				+ "where 고객ID = '" + 고객Id +"'";
+		try {
+			Statement getStmt = conn.createStatement();
+			ResultSet rs = getStmt.executeQuery(getSNsql);
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			} else {
+				throw new NoSuch고객Exception(고객Id);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.severe(e.getMessage());
+		}
+		return 0;
+	}
+
 	/**
 	 * 고객 주소 선택 받아 상세 주소 입력 및 DB 저장
 	 * @param scanner
-	 * @param 고객id
+	 * @param 고객SN
 	 * @throws NoInputException
 	 * @throws StopSearchingException
 	 */
-	private DeliverAddress get배송주소(Scanner scanner, int 고객id)
+	private DeliverAddress get배송주소(Scanner scanner, int 고객SN)
 			throws  NoInputException, StopSearchingException {
-		DeliverAddress 배송주소 = null;
 		AddressMan aMan = new AddressMan();
 		
-		// 고객 입력 주소 목록 표시
-		var addresses = aMan.displayCustomerAddresses(고객id, logger);
-		// 세 가지 옵션 중 택일 
-		// - 새 주소 입력, 기존 주소 활용, 기존 주소 관리
-		StringBuffer sBuf = new StringBuffer();
-		sBuf.append("다음 옵션 중 하나를 선택하세요.\n");
-		sBuf.append("\t1. 새 주소 입력\n");
-		sBuf.append("\t2. 위 주소 사용(세부 주소 변경 가능)\n");
-		sBuf.append("\t3. 위 주소 관리(삭제 혹은 갱신)\n");
+		// 고객 과거 주소 목록 표시
+		var addresses = aMan.displayCustomerAddresses(고객SN, logger);
 		
-		int option = Utility.getIntegerValue(scanner, 
-				sBuf.toString(), "주소 옵션(1~3)", true);
-		switch (option) {
-		case 1: // 새 주소
-			배송주소 = acquireNewAddress(scanner, aMan, 고객id);
-			break;
-			
-		case 2: // 구 주소 사용
-			배송주소 = useOldAddress(addresses, scanner, aMan, 고객id);
-			break;
-			
-		case 3: // 구 주소 관리
-//			manageOldAddresses(scanner, aMan, 고객id);
-			break;
-			
-		default:
-			break;
-		}
-		return 배송주소;
+		// 새 주소 입력 혹은 과거 주소 활용
+		if (addresses.size() > 0) {
+			boolean resp = getUserResponse(
+					"과거 주소 중에서 선택하겠습니까?", scanner);
+			if (resp)
+				return useOldAddress(addresses, scanner, aMan, 고객SN);
+		}  
+		return acquireNewAddress(scanner, aMan, 고객SN);
 	}
 
 	private DeliverAddress useOldAddress(
 			ArrayList<CustomerAddress> addresses, 
-			Scanner scanner, AddressMan aMan, int 고객id) {
+			Scanner scanner, AddressMan aMan, int 고객SN) {
 		// 사용할 과거 주소 번호 요구
 		int idx = -1;
 		while (true) {
@@ -211,14 +222,14 @@ public class DaBang {
 			if (scanner.hasNextLine()) {
 				String 상세주소 = scanner.nextLine().trim();
 				deliAddr.set상세주소(상세주소);
-				save고객주소(고객id, addr.get단지번호(), 상세주소);
+				save고객주소(고객SN, addr.get단지번호(), 상세주소);
 			}
 		}
 		return deliAddr;
 	}
 
 	private DeliverAddress acquireNewAddress(Scanner scanner, 
-			AddressMan aMan, int 고객id)	
+			AddressMan aMan, int 고객SN)	
 					throws StopSearchingException, 
 							NoInputException {
 		// 새 주소 입력
@@ -242,7 +253,7 @@ public class DaBang {
 			상세주소 = scanner.nextLine();
 			System.out.println("입력한 상세주소: " + 상세주소);
 		}
-		int 단지번호 = save단지번호_주소(고객id, 상세주소, 
+		int 단지번호 = save단지번호_주소(고객SN, 상세주소, 
 				addresses[idx - 1]);
 		return new DeliverAddress(단지번호, 상세주소);
 	}
@@ -263,7 +274,7 @@ public class DaBang {
 		}
 	}
 	
-	private int save단지번호_주소(int 고객id, 
+	private int save단지번호_주소(int 고객SN, 
 			String detailedAddr, RoadAddress address) {
 		// 관리번호 단지주소 등록 여부 판단
 		int 단지번호 = get단지주소번호(address.getMgmtNumber());
@@ -273,17 +284,16 @@ public class DaBang {
 			단지번호 = save단지주소(address);
 		}
 		// 고객주소 행 삽입(단지주소자동번호 등 사용)
-		// 고객id, 단지번호, detailedAddr
-		save고객주소(고객id, 단지번호, detailedAddr);
+		save고객주소(고객SN, 단지번호, detailedAddr);
 		return 단지번호;
 	}
 
-	private int save고객주소(int 고객id, int 단지번호, 
+	private int save고객주소(int 고객SN, int 단지번호, 
 			String detailedAddr) {
 		String iSql = String.format("insert into "
-				+ "고객주소(고객id, 단지번호, 상세주소) "
+				+ "고객주소(고객SN, 단지번호, 상세주소) "
 				+ "values (%s, %s, '%s');",
-				고객id, 단지번호, detailedAddr);
+				고객SN, 단지번호, detailedAddr);
 		
 		try (var stmt = conn.createStatement()){
 			return stmt.executeUpdate(iSql);
@@ -351,10 +361,10 @@ public class DaBang {
 	}
 
 	private void storeIntoMariaDb(String tea, int teaCount, 
-			int 고객id, DeliverAddress 배송주소) {
+			int 고객SN, DeliverAddress 배송주소) {
 		//formatter:off
 		String iSql = "insert into 상품주문"
-				+ "(상품id, 고객id, 주문수량, 단지번호, 상세주소) "
+				+ "(상품id, 고객SN, 주문수량, 단지번호, 상세주소) "
 				+ "values (?,?,?,?,?)";
 		//formatter:on
 		try {
@@ -362,14 +372,14 @@ public class DaBang {
 			int 상품id = get상품IDfromDB(tea);
 			
 			iPs.setInt(1, 상품id);
-			iPs.setInt(2, 고객id);
+			iPs.setInt(2, 고객SN);
 			iPs.setInt(3, teaCount);
 			iPs.setInt(4, 배송주소.단지번호);
 			iPs.setString(5, 배송주소.상세주소);
 			
 			int inserted = iPs.executeUpdate();
 			logger.config("주문 DB 저장 건수: " + inserted);
-			logger.config(tea + " 구매, 고객ID: " + 고객id 
+			logger.config(tea + " 구매, 고객SN: " + 고객SN 
 					+ ", " + teaCount);
 		} catch (SQLException e) {
 			e.printStackTrace();
