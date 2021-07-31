@@ -112,8 +112,12 @@ public class DaBang {
 					// 고객 가입 옵션 제시
 					optional고객등록(scanner);
 					try {
-						if (loginSucceeded(scanner))
+						CustomerInfo customer 
+							= loginSucceeded(scanner); 
+						if (customer != null) {
+							고객SN = customer.get고객SN();
 							break;
+						}
 					} catch (NoSuch고객Exception e) {
 						System.out.println(e.getMessage());
 						logger.warning(e.getMessage());
@@ -147,7 +151,7 @@ public class DaBang {
 		Toolkit.getDefaultToolkit().beep();
 	}
 
-	private boolean loginSucceeded(Scanner scanner) 
+	private CustomerInfo loginSucceeded(Scanner scanner) 
 			throws NoSuch고객Exception {
 		System.out.println("다름 로그인 정보를 입력하세요.");	
 		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ");
@@ -160,14 +164,15 @@ public class DaBang {
 				boolean goodPwd = SecureMan.passwordVerified
 						(password, customer);
 				if (goodPwd) {
-					int 고객SN = get고객SN(고객Id);
-					return true;
+					System.out.println("'" + 고객Id 
+							+ "'님 로그인되었습니다.");
+					return customer;
 				}
 			}
 			String msg = "고객ID 혹은 비밀번호 오류입니다.";
 			throw new NoSuch고객Exception(msg);
 		}
-		return false;
+		return null;
 	}
 
 	private void optional고객등록(Scanner scanner) {
