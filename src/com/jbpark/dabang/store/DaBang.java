@@ -54,6 +54,7 @@ public class DaBang {
 
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
+		
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
 				try {
@@ -105,7 +106,9 @@ public class DaBang {
 				int 고객SN = 0;
 				
 				while (true) {
-					String 고객Id = Utility.get고객ID(scanner);
+					// 고객 가입 옵션 제시
+					optional고객등록(scanner);
+					String 고객Id = Utility.get고객ID(scanner, "고객ID를 입력하세요 : ");
 					try {
 						고객SN = get고객SN(고객Id);
 						break;
@@ -140,6 +143,21 @@ public class DaBang {
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();
+	}
+
+	private void optional고객등록(Scanner scanner) {
+		if (getUserResponse("계정이 없으십니까?", scanner)) {
+			String 고객Id = Utility.get고객ID(scanner, "사용할 'ID'를 입력하세요 : ");
+			try {
+				get고객SN(고객Id);
+			} catch (NoSuch고객Exception e) {
+				System.out.print("'" + 고객Id + "'는 사용가능합니다.");
+			}
+			System.out.print("비밀번호를 입력하세요: ");
+			if (scanner.hasNext()) {
+				
+			}
+		}
 	}
 
 	private int get고객SN(String 고객Id) throws NoSuch고객Exception {
