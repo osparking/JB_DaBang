@@ -2,6 +2,7 @@ package com.jbpark.dabang.store;
 
 public class CustomerInfo {
 	private int 고객SN;
+	private String 고객ID;
 	private String 고객이름;
 	private byte[] salt = new byte[16];
 	private byte[] password = new byte[16];
@@ -15,6 +16,14 @@ public class CustomerInfo {
 		this.고객이름 = 고객이름;
 		salt = new byte[16];
 		password = new byte[16];
+	}
+
+	public String get고객ID() {
+		return 고객ID;
+	}
+
+	public void set고객ID(String 고객id) {
+		고객ID = 고객id;
 	}
 
 	public int get고객SN() {

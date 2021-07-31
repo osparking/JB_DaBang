@@ -89,7 +89,7 @@ public class DaBang {
 				if (customer != null) {
 					고객SN = customer.get고객SN();
 					System.out.println("J.B.차방이 " +
-							customer.get고객SN() + 
+							customer.get고객ID() + 
 							"님을 환영합니다");
 					break;
 				}
@@ -98,7 +98,6 @@ public class DaBang {
 				logger.warning(e.getMessage());
 			}
 		}
-		
 
 		TeaType type = null;  
 		
@@ -162,6 +161,7 @@ public class DaBang {
 
 			if (rs.next()) {
 				var customer = new CustomerInfo();
+				customer.set고객ID(고객ID);
 				
 				customer.set고객SN(rs.getInt(1));
 				customer.set고객이름(rs.getString(2));
