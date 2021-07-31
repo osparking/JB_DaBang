@@ -80,12 +80,12 @@ public class DaBang {
 		int 고객SN = 0;
 
 		System.out.println("다음 손님 어서오세요...");
+		CustomerInfo customer = null;
 		while (true) {
 			// 고객 가입 옵션 제시
 			optional고객등록(scanner);
 			try {
-				CustomerInfo customer 
-					= getCustomerInfo(scanner); 
+				customer = getCustomerInfo(scanner); 
 				if (customer != null) {
 					고객SN = customer.get고객SN();
 					System.out.println("J.B.차방이 " +
@@ -118,9 +118,7 @@ public class DaBang {
 				break;
 		} while (true);
 		
-		if (type == null)
-			System.out.println("안녕히 가십시오.");
-		else {
+		if (type != null){
 			try {
 				int teaCount = Utility.getIntegerValue(scanner,
 						"몇 잔을 원하십니까? : ", "구매 수량");
@@ -149,6 +147,7 @@ public class DaBang {
 						" 입력을 원하지 않습니다.");
 			}
 		}
+		System.out.println(customer.get고객ID() + "님 안녕히 가십시오.");
 		Toolkit.getDefaultToolkit().beep();
 	}
 	
