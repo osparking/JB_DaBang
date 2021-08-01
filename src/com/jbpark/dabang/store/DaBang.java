@@ -141,13 +141,14 @@ public class DaBang {
 				
 				storeIntoMariaDb(tea, teaCount, 고객SN, 배송주소);
 				System.out.println(msg);
-				고객SN = 0;
 			} catch (NoInputException e) {
 				System.out.println(e.getMessage() +
 						" 입력을 원하지 않습니다.");
 			}
 		}
 		System.out.println(customer.get고객ID() + "님 안녕히 가십시오.");
+		고객SN = 0;
+		customer = null;
 		Toolkit.getDefaultToolkit().beep();
 	}
 	
