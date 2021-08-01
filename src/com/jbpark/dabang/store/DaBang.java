@@ -205,15 +205,20 @@ public class DaBang {
 			String 고객Id = "";
 			String preFix = "사용할";
 			while (true) {
-				고객Id = Utility.get고객ID(scanner, 
-						preFix + " 'ID'를 입력하세요 : ");
 				try {
-					get고객SN(고객Id);
-					System.out.println("'" + 고객Id 
-							+ "'는 사용하실 수 없습니다.");
-					preFix = "다른";
-				} catch (NoSuch고객Exception e) {
-					System.out.print("'" + 고객Id + "'는 사용가능합니다.");
+					고객Id = Utility.get고객ID(scanner, 
+							preFix + " 'ID'를 입력하세요 : ");
+					try {
+						get고객SN(고객Id);
+						System.out.println("'" + 고객Id 
+								+ "'는 사용하실 수 없습니다.");
+						preFix = "다른";
+					} catch (NoSuch고객Exception e) {
+						System.out.print("'" + 고객Id + "'는 사용가능합니다.");
+						break;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
 					break;
 				}
 			}
@@ -553,6 +558,9 @@ public class DaBang {
 			if (scanner.hasNextLine()) {
 				고객입력 = scanner.nextLine();
 				고객입력 = 고객입력.trim();
+			} else {
+				System.out.println("\n프로그램 강제 종료!");
+				System.exit(0);
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
