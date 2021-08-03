@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.jbpark.dabang.module.AddrSearchKey;
 import com.jbpark.dabang.module.AddressMan;
 import com.jbpark.dabang.module.CustomerAddress;
 import com.jbpark.dabang.module.NoInputException;
@@ -347,7 +348,20 @@ public class DaBang {
 							NoInputException {
 		// 새 주소 입력
 		System.out.println("배송지 주소를 입력하세요.");
-		SearchResult searchResult = aMan.search(scanner);
+		
+		AddrSearchKey key = aMan.getAddrSearchKey(scanner);
+		Integer pageNo;
+		try {
+			pageNo = Utility.getIntegerValue(scanner, 
+					"페이지 번호를 입력하세요.", "페이지 번호(기본=1)", 
+					true);
+		} catch (NoInputException e) {
+			pageNo = 1;
+		}
+		
+		
+		
+		SearchResult searchResult = aMan.search(key, pageNo);
 		RoadAddress[] addresses = searchResult.getAddresses();
 		for (RoadAddress ra : addresses) {
 			if (ra != null) logger.config(ra.toString());
