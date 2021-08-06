@@ -359,10 +359,9 @@ public class DaBang {
 			pageNo = 1;
 		}
 		
-		
-		
 		SearchResult searchResult = aMan.search(key, pageNo);
 		RoadAddress[] addresses = searchResult.getAddresses();
+		
 		for (RoadAddress ra : addresses) {
 			if (ra != null) logger.config(ra.toString());
 		}
@@ -431,11 +430,17 @@ public class DaBang {
 		}		
 		return 0;	
 	}
+	
+	public int save단지주소Test(RoadAddress address) {
+		return save단지주소(address);
+	}
 
 	private int save단지주소(RoadAddress address) {
 		String iSql = String.format("insert into 단지주소"
-				+ "(관리번호, 도로명주소) values ('%s', '%s');",
+				+ " (관리번호, 우편번호, 도로명주소) "
+				+ "values ('%s', %s, '%s');",
 				address.getMgmtNumber(), 
+				address.getNewZipcode(), 
 				address.getRoadName());
 		ResultSet rs = null;
 		
