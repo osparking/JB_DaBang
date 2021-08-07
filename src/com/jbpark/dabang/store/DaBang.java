@@ -588,7 +588,7 @@ public class DaBang {
 			pageNo = 1;
 		}
 		
-		SearchResult searchResult = aMan.search(key, pageNo);
+		SearchResult searchResult = aMan.searchAddress(key, pageNo);
 		RoadAddress[] addresses = searchResult.getAddresses();
 		
 		for (RoadAddress ra : addresses) {
