@@ -2,6 +2,7 @@ package com.jbpark.dabang.store;
 
 import java.awt.Toolkit;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,8 +13,10 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.OptionalInt;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
@@ -49,6 +52,7 @@ import jbpark.utility.SuffixChecker;
  */
 public class DaBang {
 	private static Logger logger = JLogger.getLogger();
+	private static boolean DEBUG_MODE; 
 	
 	private static Connection conn = null;
 	static {
@@ -57,7 +61,35 @@ public class DaBang {
 			logger.info("Connection is successful");
 	};
 
+	private void checkArgs(String[] args) {
+	    for (int i = 0; i < args.length; i++) {
+	        switch (args[i].charAt(0)) {
+	        case '-':
+	            if (args[i].length() < 2)
+	                throw new IllegalArgumentException("Not a valid argument: "+args[i]);
+	            if (args[i].charAt(1) == '-') {
+	                if (args[i].length() < 3)
+	                    throw new IllegalArgumentException("Not a valid argument: "+args[i]);
+	                // --opt
+	            } else {
+	                if (args.length-1 == i)
+	                    throw new IllegalArgumentException("Expected arg after: "+args[i]);
+	                // -opt
+	                if (args[i].equals("D"))
+	                	DEBUG_MODE = true;
+	                i++;
+	            }
+	            break;
+	        default:
+	            break;
+	        }
+	    }		
+	}
+	
 	public static void main(String[] args) {
+		if (args.length > 0 && args[0].equals("-D")) {
+			DEBUG_MODE = true;
+		}
 		var jbDabang = new DaBang();
 		
 		try (Scanner scanner = new Scanner(System.in)) {
@@ -184,44 +216,123 @@ public class DaBang {
 	}
 	
 	private ArrayList<TraditionalTea> getTeaProducts(Scanner scanner) {
-		var teaList = new ArrayList<TraditionalTea>();
 		
 		// 검색을 원하는지 묻고
 		if (getUserResponse("차를 검색하시겠습니까?", scanner)) {
-			// 원하면, 검색키 요구
-			// 검색키 수
-			//	1 개 : like 절로 검색  
-			//	2+
-			//	  길이 3 이상 없음: 다음 두 질의를 합쳐(Union) 제공
-			//	    모두 AND로 연결
-			//	    모두 or 로 연결
-			//	  길이 3이상 있음: match 사용 fulltext 검색
+			String[] teaKeys = getTeaSearchKeys();
+			if (teaKeys.length > 0 &&
+					teaKeys[0].length() > 1) {
+				return getTeaProductList(teaKeys);
+			} else {
+				return getAllProducts();
+			}
 		} else {
-			// 원하지 않으면, 모두 제공
-			try (Statement stmt = conn.createStatement()) {
-				String query = "SELECT 상품ID, 차이름, 제고수량, "
-						+ "제조일, 용량, 가격, 설명 "
-						+ "FROM 전통차 order by 차이름";
-				ResultSet rs = stmt.executeQuery(query);	
-				while (rs.next()) {
-					TeaType type = TeaType.valueOf(
-							rs.getString("차이름"));
-					Date date제조 = rs.getDate("제조일");
-					LocalDate 제조일 = 
-							convertToLocalDateViaMilisecond(date제조);
-					
-					teaList.add(new TraditionalTea(
-							rs.getInt("상품ID"), type,
-							rs.getInt("제고수량"), 제조일, 
-							rs.getString("용량"), rs.getDouble("가격"),
-							rs.getString("설명")));
-				}
-				return teaList;
-			} catch (SQLException e) {
-				e.printStackTrace();
+			return getAllProducts();
+		}
+	}
+
+	private ArrayList<TraditionalTea> getAllProducts() {
+		try (Statement stmt = conn.createStatement()) {
+			String query = "SELECT 상품ID, 차이름, 제고수량, "
+					+ "제조일, 용량, 가격, 설명 "
+					+ "FROM 전통차 order by 차이름";				
+			ResultSet rs = stmt.executeQuery(query);	
+
+			return getProductList(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private ArrayList<TraditionalTea> getProductList(ResultSet rs) 
+			throws SQLException {
+		var teaList = new ArrayList<TraditionalTea>();				
+		
+		while (rs.next()) {
+			TeaType type = TeaType.valueOf(
+					rs.getString("차이름"));
+			Date date제조 = rs.getDate("제조일");
+			LocalDate 제조일 = 
+					convertToLocalDateViaMilisecond(date제조);
+			
+			teaList.add(new TraditionalTea(
+					rs.getInt("상품ID"), type,
+					rs.getInt("제고수량"), 제조일, 
+					rs.getString("용량"), rs.getDouble("가격"),
+					rs.getString("설명")));
+		}
+		return teaList;
+	}
+
+	public ArrayList<TraditionalTea> callGetTeaProductList(
+			String[] teaKeys) {
+		return getTeaProductList(teaKeys);
+	}
+	
+	private ArrayList<TraditionalTea> getTeaProductList(String[] 
+			teaKeys) {
+		if (teaKeys.length == 1) {
+			//	1 개 : like 절로 검색  
+			return searchProducts(teaKeys[0]);		
+		} else {
+			OptionalInt maxWordLen = Arrays.asList(teaKeys)
+					.stream().mapToInt(String::length).max();
+			if (maxWordLen.isPresent() && 
+					maxWordLen.getAsInt() >= 3) {
+				// match 사용 fulltext 검색
+				return fullTextSearch(teaKeys);
+			} else {
+				// 길이 3 이상 없음: 다음 두 질의를 합쳐(Union) 제공
+				//	 모두 AND로 연결한 결과 다음
+				//	 모두 or 로 연결한 결과를 추가(union)
+				
 			}
 		}
 		return null;
+	}
+
+	private ArrayList<TraditionalTea> fullTextSearch(String[] teaKeys) {
+		String sql = "SELECT * FROM 전통차 WHERE MATCH(설명) AGAINST(?)"
+				+ " order by 차이름";	
+		String commaSepStrings = String.join(",", teaKeys);
+		
+		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setString(1, commaSepStrings);
+			
+			ResultSet rs = pstmt.executeQuery();
+			
+			return getProductList(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private ArrayList<TraditionalTea> searchProducts(String key) {
+		String sql = "SELECT 상품ID, 차이름, 제고수량, 제조일, 용량,"
+				+ "가격, 설명 FROM 전통차 "
+				+ "where 설명 like ? order by 차이름";	
+		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setString(1, "%" + key + "%");
+			
+			ResultSet rs = pstmt.executeQuery();
+			
+			return getProductList(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 두 자 이상의 단어를 최대 3개 수령하여 반환한다.
+	 * @return
+	 */
+	private String[] getTeaSearchKeys() {
+//		String [] keys = {"녹차"};
+		String [] keys = {"신토불이", "녹차"};
+		return keys;
 	}
 
 	public static CustomerInfo read전통고객(String 고객ID) {
@@ -252,8 +363,17 @@ public class DaBang {
 	private CustomerInfo getCustomerInfo(Scanner scanner) 
 			throws NoSuch고객Exception {
 		System.out.println("로그인 정보를 입력하세요.");	
-		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ");
+		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ",
+				DEBUG_MODE);
 		System.out.print("\t비밀번호: ");
+		
+		if (DEBUG_MODE) {
+			var customer = read전통고객(고객Id);
+			System.out.println("'" + 고객Id 
+						+ "'님 로그인되었습니다.");
+			return customer;
+		}		
+		
 		if (scanner.hasNext()) {
 			String password = scanner.nextLine().trim();
 			var customer = read전통고객(고객Id);
@@ -269,7 +389,7 @@ public class DaBang {
 			}
 			String msg = "고객ID 혹은 비밀번호 오류입니다.";
 			throw new NoSuch고객Exception(msg);
-		}
+		} 
 		return null;
 	}
 
@@ -280,7 +400,7 @@ public class DaBang {
 			while (true) {
 				try {
 					고객Id = Utility.get고객ID(scanner, 
-							preFix + " 'ID'를 입력하세요 : ");
+							preFix + " 'ID'를 입력하세요 : ", false);
 					try {
 						get고객SN(고객Id);
 						System.out.println("'" + 고객Id 

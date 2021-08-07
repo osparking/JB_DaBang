@@ -17,5 +17,13 @@ class TestMethods {
 		int 단지번호 = daBang.save단지주소Test(address);
 		assertTrue(단지번호 > 0);
 	}
-
+	
+	@Test
+	void test_getTeaProductList() {
+		DaBang daBang = new DaBang();
+		String [] keys = {"신토불이", "녹차"};
+		
+		var list = daBang.callGetTeaProductList(keys);
+		assertTrue(list.size() == 1);
+	}
 }
