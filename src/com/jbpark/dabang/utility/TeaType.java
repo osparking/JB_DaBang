@@ -7,7 +7,7 @@ package com.jbpark.dabang.utility;
  *
  */
 public enum TeaType {
-	감잎("ㄱ"), 보성녹차("ㅂ"), 율무차("ㅇ");
+	감잎("ㄱ"), 녹차("ㄴ"), 율무차("ㅇ");
 
 	private String 단축명;
 

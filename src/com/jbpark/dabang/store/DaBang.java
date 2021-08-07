@@ -5,11 +5,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -103,12 +106,28 @@ public class DaBang {
 		TeaType type = null;  
 		
 		do {
-			showTeaSelection();
+			var teaList = getTeaProducts(scanner);
+			String weekDay = LocalDate.now().format(DateTimeFormatter
+					.ofPattern("E").withLocale(Locale.KOREAN)); //E:요일
+			
+			System.out.println("=".repeat(40));
+			System.out.println("다음 차 종류 중에서 선택하세요:");
+			System.out.println("=".repeat(40));
+			System.out.println(" * : '" + weekDay + "'요일 특별 차!");			
+			
+			int rowCount = showTeaSelection(teaList);
+			
 			try {
-				type = getTeaSelection(scanner);
-			} catch (TeaInputException te) {
-				String msg = "'는 잘못된 입력입니다. 다시 선택해 주세요.";
-				System.out.println("'" + te.getMessage() + msg);
+				int tNum = Utility.getIntegerValue(scanner,
+						"어떤 차를 원하십니까? : ", "번호(1-" + rowCount + "): ");	
+				type = confirmSelection(scanner, tNum, 
+						teaList.get(tNum-1).get차종류());
+			} catch (NoInputException e) {
+				System.out.println("차 번호를 입력해 주세요.");
+				continue;
+			} catch (TeaInputException e) {
+				String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
+				System.out.println("'" + e.getMessage() + msg);
 				continue;
 			}
 			if (type == null) {
@@ -126,11 +145,10 @@ public class DaBang {
 				String tea = type.name();
 				int idx = tea.length() - 1;
 				int cp = tea.codePointAt(idx);
-				String msg = 고객SN + " 고객님의 '" 
-						+ tea
-						+ (SuffixChecker.has받침(cp, 
-							tea.substring(idx)) ? "'을 " : "'를 ") 
-					+ teaCount + "잔 준비할께요.";
+				String msg = customer.get고객ID() + " 고객님의 '" 
+					+ tea + (SuffixChecker.has받침(cp, 
+						tea.substring(idx)) ? "'을 " : "'를 ")
+					+ teaCount + "잔 준비합니다.";
 				/**
 				 * 고객 주소 입력
 				 */
@@ -140,7 +158,7 @@ public class DaBang {
 				String timeLabel = LocalTime.now().format(dtf);
 				logger.info(msg + ", 주문 시각: " + timeLabel);
 				
-				storeIntoMariaDb(tea, teaCount, 고객SN, 배송주소);
+				save상품주문(tea, teaCount, 고객SN, 배송주소);
 				System.out.println(msg);
 			} catch (NoInputException e) {
 				System.out.println(e.getMessage() +
@@ -153,6 +171,59 @@ public class DaBang {
 		Toolkit.getDefaultToolkit().beep();
 	}
 	
+	private int getTodaySpecial(int size) {
+		return (int)ChronoUnit.DAYS.between(
+				LocalDate.of(2021, 6, 22), LocalDate.now()) 
+				% size;
+	}
+	
+	private LocalDate convertToLocalDateViaMilisecond(Date dateToConvert) {
+	    return Instant.ofEpochMilli(dateToConvert.getTime())
+	      .atZone(ZoneId.systemDefault())
+	      .toLocalDate();
+	}
+	
+	private ArrayList<TraditionalTea> getTeaProducts(Scanner scanner) {
+		var teaList = new ArrayList<TraditionalTea>();
+		
+		// 검색을 원하는지 묻고
+		if (getUserResponse("차를 검색하시겠습니까?", scanner)) {
+			// 원하면, 검색키 요구
+			// 검색키 수
+			//	1 개 : like 절로 검색  
+			//	2+
+			//	  길이 3 이상 없음: 다음 두 질의를 합쳐(Union) 제공
+			//	    모두 AND로 연결
+			//	    모두 or 로 연결
+			//	  길이 3이상 있음: match 사용 fulltext 검색
+		} else {
+			// 원하지 않으면, 모두 제공
+			try (Statement stmt = conn.createStatement()) {
+				String query = "SELECT 상품ID, 차이름, 제고수량, "
+						+ "제조일, 용량, 가격, 설명 "
+						+ "FROM 전통차 order by 차이름";
+				ResultSet rs = stmt.executeQuery(query);	
+				while (rs.next()) {
+					TeaType type = TeaType.valueOf(
+							rs.getString("차이름"));
+					Date date제조 = rs.getDate("제조일");
+					LocalDate 제조일 = 
+							convertToLocalDateViaMilisecond(date제조);
+					
+					teaList.add(new TraditionalTea(
+							rs.getInt("상품ID"), type,
+							rs.getInt("제고수량"), 제조일, 
+							rs.getString("용량"), rs.getDouble("가격"),
+							rs.getString("설명")));
+				}
+				return teaList;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
 	public static CustomerInfo read전통고객(String 고객ID) {
 		String getCustInfo = "select 고객SN, 고객이름, salt, password"
 				+ " from 전통고객 where 고객ID = '" + 고객ID + "'";
@@ -493,7 +564,7 @@ public class DaBang {
 		}			
 	}
 
-	private void storeIntoMariaDb(String tea, int teaCount, 
+	private void save상품주문(String tea, int teaCount, 
 			int 고객SN, DeliverAddress 배송주소) {
 		//formatter:off
 		String iSql = "insert into 상품주문"
@@ -541,35 +612,26 @@ public class DaBang {
 	 * 고객으로부터 선택하는 차 종류 텍스트를 입력받는다.
 	 * 
 	 * @param scanner 고객 입력 차 종류 텍스트 스캐너
+	 * @param tea번호 
+	 * @param teaType 
 	 * @return 선택된 차 종류 값 혹은 null(선택 불원의 경우)
 	 * @throws TeaInputException 입력 오류의 경우 발생됨
 	 */
-	private TeaType getTeaSelection(Scanner scanner) 
+	private TeaType confirmSelection(Scanner scanner, 
+						int tea번호, TeaType type) 
 			throws TeaInputException {
-		String selection = 입력접수(scanner);
-
-		if (selection.isEmpty()) {
-			return null;
-		}
-		for (var type : TeaType.values()) {
-			if (type.get단축명().equals(selection) || 
-					type.name().indexOf(selection) >= 0) {
-				String teaLong = type.toString();
-				int idx = teaLong.indexOf('(');
-				int cp = teaLong.codePointAt(--idx);
-				String sfx = SuffixChecker.has받침(
-						cp, teaLong.substring(idx))
-						? "을" : "를";
-				String msg = type + sfx + " 선택하셨습니까";
-				boolean resp = getUserResponse(msg, scanner);
-				
-				if (resp)
-					return type;
-				else
-					return null;
-			}
-		}
-		throw new TeaInputException(selection);
+		String teaLong = type.toString();
+		int idx = teaLong.indexOf('(');
+		int cp = teaLong.codePointAt(--idx);
+		String sfx = SuffixChecker.has받침(
+				cp, teaLong.substring(idx))
+				? "을" : "를";
+		String msg = tea번호 + "번 " + type + sfx + " 선택하셨습니까";
+		
+		if (getUserResponse(msg, scanner))
+			return type;
+		else
+			throw new TeaInputException(type.toString());
 	}
 
 	private String 입력접수(Scanner scanner) {
@@ -608,7 +670,7 @@ public class DaBang {
 				System.out.println("입력 오류입니다. 다시 입력해 주세요");
 			}
 			System.out.println(question + "?");
-			System.out.print("Y/y/[엔터]=예; N/n=아니오: ");
+			System.out.print("y,기본)예, n) 아니오: ");
 			input = 입력접수(scanner);
 			if (input != null) {
 				input = input.trim().toLowerCase();
@@ -629,31 +691,20 @@ public class DaBang {
 		return false;
 	}
 
-	private void showTeaSelection() {
-		LocalDate today = LocalDate.now();
-		String weekDay = today.format(DateTimeFormatter
-				.ofPattern("E").withLocale(Locale.KOREAN)); //E:요일
-		
-		System.out.println("=".repeat(40));
-		System.out.println("다음 차 종류 중에서 선택하세요:");
-		System.out.println("=".repeat(40));
-		System.out.println(" * : '" + weekDay + "'요일 특별 차!");
-
-		TeaType[] teaTypes = TeaType.values();
-		long specialInx = ChronoUnit.DAYS.between(
-				LocalDate.of(2021, 6, 22), today) 
-				% teaTypes.length;
-		int teaCount = teaTypes.length;
-		
-		for (int i = 0; i < teaCount; i++) {
-			var teaMenu = new StringBuffer(" -");
-			teaMenu.append(teaTypes[i]);
-			if (i == specialInx)
+	private int showTeaSelection(ArrayList<TraditionalTea> teaList) {
+		int todayIndex= getTodaySpecial(teaList.size());
+		for (int i = 0; i < teaList.size(); i++) {
+			var teaMenu = new StringBuilder(" " + (i+1) +".");
+			TeaType currTea = teaList.get(i).get차종류(); 
+			teaMenu.append(currTea);
+			if (i == todayIndex)
 				teaMenu.append("*");
+			teaMenu.append(" - " + teaList.get(i).get설명());
 			System.out.println(teaMenu);
 		}
+		
 		System.out.println(" -메뉴 선택 안함([엔터])");
 		System.out.println("=".repeat(40));
-		System.out.print("단축명(ㄱ-ㅎ), 이름(일부/전부): ");
+		return teaList.size();		
 	}
 }
