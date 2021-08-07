@@ -219,7 +219,7 @@ public class DaBang {
 		
 		// 검색을 원하는지 묻고
 		if (getUserResponse("차를 검색하시겠습니까?", scanner)) {
-			String[] teaKeys = getTeaSearchKeys();
+			String[] teaKeys = getTeaSearchKeys(scanner);
 			if (teaKeys.length > 0 &&
 					teaKeys[0].length() > 1) {
 				return getTeaProductList(teaKeys);
@@ -358,13 +358,19 @@ public class DaBang {
 
 	/**
 	 * 두 자 이상의 단어를 최대 3개 수령하여 반환한다.
+	 * @param scanner 
 	 * @return
 	 */
-	private String[] getTeaSearchKeys() {
-//		String [] keys = {"녹차"};
-//		String [] keys = {"신토불이", "녹차"};
-		String [] keys = {"전라", "녹차"};
-		return keys;
+	private String[] getTeaSearchKeys(Scanner scanner) {
+		System.out.println("차 상품 검색키를 두 자 이상 단어 최대 3개까지 입력하세요.");
+		System.out.println("각 단어는 공백으로 분리할 것. (예, 전라도 보성 녹차");
+		System.out.print("\t: ");
+		if (scanner.hasNextLine()) {
+			String keys = scanner.nextLine();
+			String[] searchKeys = keys.split("[ |\t]");
+			return searchKeys;
+		}
+		return null;
 	}
 
 	public static CustomerInfo read전통고객(String 고객ID) {
