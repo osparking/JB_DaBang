@@ -280,14 +280,45 @@ public class DaBang {
 					.stream().mapToInt(String::length).max();
 			if (maxWordLen.isPresent() && 
 					maxWordLen.getAsInt() >= 3) {
-				// match 사용 fulltext 검색
 				return fullTextSearch(teaKeys);
 			} else {
-				// 길이 3 이상 없음: 다음 두 질의를 합쳐(Union) 제공
-				//	 모두 AND로 연결한 결과 다음
-				//	 모두 or 로 연결한 결과를 추가(union)
-				
+				return unionAndWithOr(teaKeys);			
 			}
+		}
+	}
+
+	/**
+	 * 주어진 길이 2 이하의 검색 키를 일단 AND로 연결한 조건의 결과에
+	 * OR로 연결한 조건의 결과를 합(union)하여 결과로 반환
+	 * @param teaKeys 검색키
+	 * @return 차 상품 목록
+	 */
+	private ArrayList<TraditionalTea> unionAndWithOr(String[] teaKeys) {
+		var sqlBldr = new StringBuilder();
+		sqlBldr.append("SELECT * FROM 전통차 where ");
+		sqlBldr.append("설명 like ? ");
+		for (int i = 1; i<teaKeys.length; i++) {
+			sqlBldr.append("&& 설명 like ? "); // AND로 연결
+		}
+		sqlBldr.append("union ");
+		sqlBldr.append("SELECT * FROM 전통차 where ");
+		sqlBldr.append("설명 like ? ");
+		for (int i = 1; i<teaKeys.length; i++) {
+			sqlBldr.append("|| 설명 like ? "); // OR로 연결
+		}
+		try (PreparedStatement pstmt = 
+				conn.prepareStatement(sqlBldr.toString())) {
+			for (int sq = 0; sq < 2; sq++) {
+				for (int i = 0; i < teaKeys.length; i++) {
+					int idx = (i+1)+sq*teaKeys.length;
+					pstmt.setString(idx, "%" + teaKeys[i] + "%");			
+				}
+			}
+			ResultSet rs = pstmt.executeQuery();
+			
+			return getProductList(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -331,7 +362,8 @@ public class DaBang {
 	 */
 	private String[] getTeaSearchKeys() {
 //		String [] keys = {"녹차"};
-		String [] keys = {"신토불이", "녹차"};
+//		String [] keys = {"신토불이", "녹차"};
+		String [] keys = {"전라", "녹차"};
 		return keys;
 	}
 
