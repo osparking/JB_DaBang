@@ -577,15 +577,14 @@ public class DaBang {
 		
 		AddrSearchKey key = aMan.getAddrSearchKey(scanner);
 		Integer pageNo;
-		try {
-			pageNo = Utility.getIntegerValue(scanner, 
-					"페이지 번호를 입력하세요.", "페이지 번호(기본=1)", 
-					true);
-		} catch (NoInputException e) {
-			pageNo = 1;
-		}
+		
+		// 입력 가능한 페이지 번호 범위 표시
+		int rows = aMan.getTotalRows(key);
+		pageNo = aMan.getWantedPage(scanner, rows);		
 		
 		SearchResult searchResult = aMan.searchAddress(key, pageNo);
+		searchResult.setTotalRow(rows);
+		
 		RoadAddress[] addresses = searchResult.getAddresses();
 		
 		for (RoadAddress ra : addresses) {
