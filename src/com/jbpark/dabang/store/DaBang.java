@@ -460,11 +460,9 @@ public class DaBang {
 	}
 	
 	public static int save전통고객(String 고객Id, byte[] salt, byte[] pwdEncd) {
-		//formatter:off
 		String iSql = "insert into 전통고객"
 				+ "(고객ID, 고객이름, salt, password) "
 				+ "values (?, ?, ?, ?);";
-		//formatter:on
 		try {
 			var iPs = conn.prepareStatement(iSql);
 			
@@ -723,11 +721,10 @@ public class DaBang {
 
 	private void save상품주문(String tea, int teaCount, 
 			int 고객SN, DeliverAddress 배송주소) {
-		//formatter:off
 		String iSql = "insert into 상품주문"
 				+ "(상품id, 고객SN, 주문수량, 단지번호, 상세주소) "
 				+ "values (?,?,?,?,?)";
-		//formatter:on
+
 		try {
 			var iPs = conn.prepareStatement(iSql);
 			int 상품id = get상품IDfromDB(tea);
