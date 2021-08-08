@@ -66,16 +66,14 @@ public class DaBang {
 	        switch (args[i].charAt(0)) {
 	        case '-':
 	            if (args[i].length() < 2)
-	                throw new IllegalArgumentException("Not a valid argument: "+args[i]);
+	                throw new IllegalArgumentException("바른 인자 아님: " + args[i]);
 	            if (args[i].charAt(1) == '-') {
+	            	// --opt
 	                if (args[i].length() < 3)
-	                    throw new IllegalArgumentException("Not a valid argument: "+args[i]);
-	                // --opt
+	                    throw new IllegalArgumentException("바른 인자 아님: " + args[i]);
 	            } else {
-	                if (args.length-1 == i)
-	                    throw new IllegalArgumentException("Expected arg after: "+args[i]);
 	                // -opt
-	                if (args[i].equals("D"))
+	                if (args[i].equals("-D"))
 	                	DEBUG_MODE = true;
 	                i++;
 	            }
@@ -87,10 +85,11 @@ public class DaBang {
 	}
 	
 	public static void main(String[] args) {
-		if (args.length > 0 && args[0].equals("-D")) {
-			DEBUG_MODE = true;
-		}
+//		if (args.length > 0 && args[0].equals("-D")) {
+//			DEBUG_MODE = true;
+//		}
 		var jbDabang = new DaBang();
+		jbDabang.checkArgs(args);
 		
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (true) {
