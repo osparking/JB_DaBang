@@ -32,7 +32,7 @@ CREATE TABLE `고객주소` (
   KEY `고객주소_주소번호_IDX` (`주소번호`) USING BTREE,
   CONSTRAINT `고객주소_FK` FOREIGN KEY (`고객SN`) REFERENCES `전통고객` (`고객SN`),
   CONSTRAINT `고객주소_단지번호_FK` FOREIGN KEY (`단지번호`) REFERENCES `단지주소` (`단지번호`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `고객주소` (
 
 LOCK TABLES `고객주소` WRITE;
 /*!40000 ALTER TABLE `고객주소` DISABLE KEYS */;
-INSERT INTO `고객주소` VALUES (12,4,6,'304호실'),(13,4,6,'304강당');
+INSERT INTO `고객주소` VALUES (12,4,6,'304호실'),(13,4,6,'304강당'),(14,6,16,'101호');
 /*!40000 ALTER TABLE `고객주소` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -55,12 +55,13 @@ DROP TABLE IF EXISTS `단지주소`;
 CREATE TABLE `단지주소` (
   `단지번호` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `관리번호` decimal(25,0) NOT NULL,
+  `우편번호` mediumint(9) DEFAULT NULL COMMENT '백만저장 용량',
   `도로명주소` varchar(100) DEFAULT NULL COMMENT '경기도 수원시 팔달구 권광로364번길 7-2(우만동,현대아파트)',
   PRIMARY KEY (`단지번호`),
   UNIQUE KEY `고객단지_un` (`관리번호`),
   KEY `고객단지_관리번호_IDX` (`관리번호`) USING BTREE,
   CONSTRAINT `고객단지_FK` FOREIGN KEY (`관리번호`) REFERENCES `도로명주소` (`관리번호`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +70,7 @@ CREATE TABLE `단지주소` (
 
 LOCK TABLES `단지주소` WRITE;
 /*!40000 ALTER TABLE `단지주소` DISABLE KEYS */;
-INSERT INTO `단지주소` VALUES (6,4111513400100110009010414,'경기도 수원시 팔달구 덕영대로 899(매산로1가)'),(7,4111513400101150004010402,'경기도 수원시 팔달구 덕영대로895번길 33(매산로1가)'),(8,4111513400101110023010418,'경기도 수원시 팔달구 덕영대로895번길 7(매산로1가)'),(9,4111513400100110004010364,'경기도 수원시 팔달구 덕영대로 897-1(매산로1가)'),(10,4111513400100100000010362,'경기도 수원시 팔달구 덕영대로895번길 8(매산로1가)');
+INSERT INTO `단지주소` VALUES (6,4111513400100110009010414,NULL,'경기도 수원시 팔달구 덕영대로 899(매산로1가)'),(9,4111513400100110004010364,NULL,'경기도 수원시 팔달구 덕영대로 897-1(매산로1가)'),(10,4111513400100100000010362,NULL,'경기도 수원시 팔달구 덕영대로895번길 8(매산로1가)'),(11,4111512000100050001011066,16257,'매미소리'),(16,4111513800100620002007504,16440,'경기도 수원시 팔달구 팔달로120번길 30(화서동,명진빌라)'),(17,4111513400101110023010418,16257,'입추공기');
 /*!40000 ALTER TABLE `단지주소` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -183,7 +184,7 @@ CREATE TABLE `상품주문` (
   CONSTRAINT `상품주문_FK` FOREIGN KEY (`고객SN`) REFERENCES `전통고객` (`고객SN`),
   CONSTRAINT `상품주문_단지_FK` FOREIGN KEY (`단지번호`) REFERENCES `단지주소` (`단지번호`),
   CONSTRAINT `주문_상품ID_FK` FOREIGN KEY (`상품ID`) REFERENCES `전통차` (`상품ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -192,7 +193,7 @@ CREATE TABLE `상품주문` (
 
 LOCK TABLES `상품주문` WRITE;
 /*!40000 ALTER TABLE `상품주문` DISABLE KEYS */;
-INSERT INTO `상품주문` VALUES (19,2,4,1,'2021-08-02 12:17:30',6,'304호실'),(20,2,4,1,'2021-08-02 12:45:25',6,'304강당');
+INSERT INTO `상품주문` VALUES (19,2,4,1,'2021-08-02 12:17:30',6,'304호실'),(20,2,4,1,'2021-08-02 12:45:25',6,'304강당'),(21,4,6,13,'2021-08-09 12:36:13',16,'101호'),(22,4,6,2,'2021-08-09 13:03:48',16,'101호'),(23,4,6,4,'2021-08-09 14:33:40',16,'101호');
 /*!40000 ALTER TABLE `상품주문` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -211,7 +212,7 @@ CREATE TABLE `전통고객` (
   `salt` binary(16) DEFAULT NULL COMMENT '비밀번호 생성 salt 16바이트',
   PRIMARY KEY (`고객SN`),
   UNIQUE KEY `전통고객_ID_un` (`고객ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -220,7 +221,7 @@ CREATE TABLE `전통고객` (
 
 LOCK TABLES `전통고객` WRITE;
 /*!40000 ALTER TABLE `전통고객` DISABLE KEYS */;
-INSERT INTO `전통고객` VALUES (4,'kdhong','아무개','Ш�@>SW3��^;�V','�\'0�f�?����R�G');
+INSERT INTO `전통고객` VALUES (4,'kdhong','아무개','Ш�@>SW3��^;�V','�\'0�f�?����R�G'),(5,'jbpark','아무개','���>\"8q?���\"\r�','�����O�*�ni�z��'),(6,'myself','아무개','r�C�z�����2��','���|R��7m�<JK�');
 /*!40000 ALTER TABLE `전통고객` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -239,8 +240,12 @@ CREATE TABLE `전통차` (
   `용량` varchar(20) DEFAULT NULL COMMENT '예, 2g 티백 100개 상자',
   `가격` decimal(7,0) DEFAULT NULL COMMENT '단위: 원',
   `설명` varchar(100) DEFAULT NULL COMMENT '생산자가 제공하는 제품설명',
-  PRIMARY KEY (`상품ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+  `회사SN` int(10) unsigned DEFAULT NULL COMMENT '제조회사 일련번호',
+  PRIMARY KEY (`상품ID`),
+  KEY `전통차_FK` (`회사SN`),
+  FULLTEXT KEY `차설명_Text_IDX` (`설명`),
+  CONSTRAINT `전통차_FK` FOREIGN KEY (`회사SN`) REFERENCES `제조회사` (`회사SN`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -249,8 +254,35 @@ CREATE TABLE `전통차` (
 
 LOCK TABLES `전통차` WRITE;
 /*!40000 ALTER TABLE `전통차` DISABLE KEYS */;
-INSERT INTO `전통차` VALUES (2,'감잎',1000,'2020-10-15','2g 티백',200,NULL),(3,'율무차',500,NULL,NULL,NULL,NULL),(4,'보성녹차',2000,NULL,NULL,NULL,NULL);
+INSERT INTO `전통차` VALUES (2,'감잎',1000,'2020-10-15','2g 티백',200,'상주곳감',NULL),(3,'율무차',500,'2020-10-15',NULL,NULL,'충청도 부여의 율무를...',NULL),(4,'녹차',2000,'2020-10-15',NULL,NULL,'강원도 평창 깨끗한 물을 머금은 신토불이',NULL),(6,'녹차',500,'2020-10-15',NULL,NULL,'보성땅 보성녹차 전라도의 자랑 ',NULL),(7,'녹차',500,'2020-10-15',NULL,NULL,'제도도 암반수가 빚어낸 대한민국 푸른 녹차',NULL);
 /*!40000 ALTER TABLE `전통차` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `제조회사`
+--
+
+DROP TABLE IF EXISTS `제조회사`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `제조회사` (
+  `회사SN` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `회사명` varchar(40) NOT NULL,
+  `단지번호` int(10) unsigned DEFAULT NULL COMMENT '단지주소.단지번호',
+  PRIMARY KEY (`회사SN`),
+  UNIQUE KEY `제조회사_un` (`회사명`),
+  KEY `제조회사_FK` (`단지번호`),
+  CONSTRAINT `제조회사_FK` FOREIGN KEY (`단지번호`) REFERENCES `단지주소` (`단지번호`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='농장, 국가 약칭';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `제조회사`
+--
+
+LOCK TABLES `제조회사` WRITE;
+/*!40000 ALTER TABLE `제조회사` DISABLE KEYS */;
+/*!40000 ALTER TABLE `제조회사` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -305,4 +337,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-08-02 13:19:52
+-- Dump completed on 2021-08-10  9:51:08

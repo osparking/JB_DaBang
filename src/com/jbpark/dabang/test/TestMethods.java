@@ -11,11 +11,11 @@ import com.jbpark.dabang.store.DaBang;
 class TestMethods {
 
 	@Test
-	@Disabled("관리번호 유일 값으로 바꾼 뒤까지...")
+//	@Disabled("관리번호 유일 값으로 바꾼 뒤까지...")
 	void test() {
 		var daBang = new DaBang();
 		RoadAddress address = new RoadAddress(
-				"4111512000100050001011066", "16257", "매미소리");
+				"4111513400101110023010418", "16257", "입추공기");
 		int 단지번호 = daBang.save단지주소Test(address);
 		assertTrue(단지번호 > 0);
 	}
@@ -26,6 +26,6 @@ class TestMethods {
 		String [] keys = {"전라", "녹차"};
 		
 		var list = daBang.callGetTeaProductList(keys);
-		assertTrue(list.size() == 3);
+		assertTrue(list.size() == 2);
 	}
 }
