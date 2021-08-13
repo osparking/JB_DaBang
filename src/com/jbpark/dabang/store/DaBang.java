@@ -115,37 +115,33 @@ public class DaBang {
 
 		while (true) {
 			var sb = new StringBuilder();
+			
 			sb.append("\n수행할 수 있는 작업 목록 - ");
 			sb.append("\n\t1. 자기 주소 관리");
 			sb.append("\n\t2. 차 검색 및 주문");
 			sb.append("\n\t3. 로그 아웃");
 			
-			try {
-				int option = Utility.getIntegerValue(scanner,
-						sb.toString(), "수행할 작업 번호? (1~3)");
-				
-				switch(option) {
-				case 1: 
-					System.out.println("\t주소를 관리한다...");
-					break;
-				case 2: 
-					TeaType type = getTeaSelection(scanner);  
-					if (type != null){
-						processTeaPurchase(scanner, customer, type);
-					}
-					break;
-				case 3: 
-					sb = new StringBuilder("\t");
-					sb.append(customer.get고객ID());
-					sb.append("님 안녕히 가십시오.");
-					System.out.println(sb);
-					customer = null;
-					Toolkit.getDefaultToolkit().beep();
-					return;
+			int option = Utility.getIntegerValue(scanner,
+					sb.toString(), "수행할 작업 번호? (1~3)");
+			
+			switch(option) {
+			case 1: 
+				System.out.println("\t주소를 관리한다...");
+				break;
+			case 2: 
+				TeaType type = getTeaSelection(scanner);  
+				if (type != null){
+					processTeaPurchase(scanner, customer, type);
 				}
-			} catch (NoInputException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				break;
+			case 3: 
+				sb = new StringBuilder("\t");
+				sb.append(customer.get고객ID());
+				sb.append("님 안녕히 가십시오.");
+				System.out.println(sb);
+				customer = null;
+				Toolkit.getDefaultToolkit().beep();
+				return;
 			}
 		}
 	}
@@ -567,6 +563,7 @@ public class DaBang {
 			Scanner scanner, AddressMan aMan, int 고객SN) {
 		// 사용할 과거 주소 번호 요구
 		int idx = -1;
+		
 		while (true) {
 			try {
 				idx = Utility.getIntegerValue(scanner, 
