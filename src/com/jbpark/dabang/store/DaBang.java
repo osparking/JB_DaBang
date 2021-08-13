@@ -126,7 +126,7 @@ public class DaBang {
 			
 			switch(option) {
 			case 1: 
-				System.out.println("\t주소를 관리한다...");
+				manageOwnAddress(customer.get고객SN());				
 				break;
 			case 2: 
 				TeaType type = getTeaSelection(scanner);  
@@ -142,10 +142,17 @@ public class DaBang {
 				customer = null;
 				Toolkit.getDefaultToolkit().beep();
 				return;
+			default:
+				System.out.println("부적절한 옵션 번호: " + option);
+				break;
 			}
 		}
 	}
 	
+	private void manageOwnAddress(int 고객sn) {
+		System.out.println("\tSN: " + 고객sn + "이 자기주소 관리~");
+	}
+
 	private void processTeaPurchase(Scanner scanner, CustomerInfo 
 			customer, TeaType type) throws StopSearchingException {
 		
@@ -193,12 +200,10 @@ public class DaBang {
 			
 			try {
 				int tNum = Utility.getIntegerValue(scanner,
-						"어떤 차를 원하십니까? : ", "번호(1-" + rowCount + "): ");	
+						"어떤 차를 원하십니까? : ", 
+						"번호(1-" + rowCount + "): ");	
 				type = confirmSelection(scanner, tNum, 
 						teaList.get(tNum-1).get차종류());
-			} catch (NoInputException e) {
-				System.out.println("차 번호를 입력해 주세요.");
-				continue;
 			} catch (TeaInputException e) {
 				String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
 				System.out.println("'" + e.getMessage() + msg);
