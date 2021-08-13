@@ -11,7 +11,14 @@ import com.jbpark.dabang.store.DaBang;
 class TestMethods {
 
 	@Test
-//	@Disabled("관리번호 유일 값으로 바꾼 뒤까지...")
+	void read전통고객test() {
+		String custId = "myself";
+		var customer = DaBang.read전통고객(custId);
+		assertTrue(customer.get고객ID().equals(custId));
+		
+	}
+	@Test
+	@Disabled("관리번호 유일 값으로 바꾼 뒤까지...")
 	void test() {
 		var daBang = new DaBang();
 		RoadAddress address = new RoadAddress(
