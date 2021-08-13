@@ -85,9 +85,6 @@ public class DaBang {
 	}
 	
 	public static void main(String[] args) {
-//		if (args.length > 0 && args[0].equals("-D")) {
-//			DEBUG_MODE = true;
-//		}
 		var jbDabang = new DaBang();
 		jbDabang.checkArgs(args);
 		
@@ -112,32 +109,56 @@ public class DaBang {
 
 	private void serveOneCustomer(Scanner scanner) 
 			throws StopSearchingException {
-		int 고객SN = 0;
-
 		System.out.println("다음 손님 어서오세요...");
-		CustomerInfo customer = null;
-		while (true) {
-			// 고객 가입 옵션 제시
-			optional고객등록(scanner);
-			try {
-				customer = getCustomerInfo(scanner); 
-				if (customer != null) {
-					고객SN = customer.get고객SN();
-					System.out.println("J.B.차방이 " +
-							customer.get고객ID() + 
-							"님을 환영합니다");
-					break;
-				}
-			} catch (NoSuch고객Exception e) {
-				System.out.println(e.getMessage());
-				logger.warning(e.getMessage());
-			}
-		}
+		
+		CustomerInfo customer = getUserCredential(scanner);
 
-		TeaType type = null;  
+		// 작업 종류 문의 : 상품 주문, 주소 관리
+		// 
+		TeaType type = getTeaSelection(scanner);  
+		
+		if (type != null){
+			processTeaPurchase(scanner, customer, type);
+		}
+		System.out.println(customer.get고객ID() + "님 안녕히 가십시오.");
+		customer = null;
+		Toolkit.getDefaultToolkit().beep();
+	}
+	
+	private void processTeaPurchase(Scanner scanner, CustomerInfo 
+			customer, TeaType type) throws StopSearchingException {
+		
+		try {
+			int teaCount = Utility.getIntegerValue(scanner,
+					"몇 잔을 원하십니까? : ", "구매 수량");
+			String tea = type.name();
+			int idx = tea.length() - 1;
+			int cp = tea.codePointAt(idx);
+			String msg = customer.get고객ID() + " 고객님의 '" 
+				+ tea + (SuffixChecker.has받침(cp, 
+					tea.substring(idx)) ? "'을 " : "'를 ")
+				+ teaCount + "잔 준비합니다.";
+			/**
+			 * 고객 주소 입력
+			 */
+			DeliverAddress 배송주소 = get배송주소(scanner, customer.get고객SN());
+			DateTimeFormatter dtf 
+			= DateTimeFormatter.ofPattern("HH:mm");
+			String timeLabel = LocalTime.now().format(dtf);
+			logger.info(msg + ", 주문 시각: " + timeLabel);
+			
+			save상품주문(tea, teaCount, customer.get고객SN(), 배송주소);
+			System.out.println(msg);
+		} catch (NoInputException e) {
+			System.out.println(e.getMessage() +
+					" 입력을 원하지 않습니다.");
+		}
+	}
+
+	private TeaType getTeaSelection(Scanner scanner) {
+		TeaType type = null;
 		
 		do {
-			var teaList = getTeaProducts(scanner);
 			String weekDay = LocalDate.now().format(DateTimeFormatter
 					.ofPattern("E").withLocale(Locale.KOREAN)); //E:요일
 			
@@ -146,6 +167,7 @@ public class DaBang {
 			System.out.println("=".repeat(40));
 			System.out.println(" * : '" + weekDay + "'요일 특별 차!");			
 			
+			var teaList = getTeaProducts(scanner);
 			int rowCount = showTeaSelection(teaList);
 			
 			try {
@@ -162,46 +184,35 @@ public class DaBang {
 				continue;
 			}
 			if (type == null) {
-				if (getUserResponse("주문을 원치 않으십니까",
-						scanner))
+				if (getUserResponse("주문을 원치 않으십니까", scanner))
 					break;
 			} else 
 				break;
 		} while (true);
 		
-		if (type != null){
+		return type;
+	}
+
+	private CustomerInfo getUserCredential(Scanner scanner) {
+		while (true) {
+			// 고객 가입 옵션 제시
+			optional고객등록(scanner);
 			try {
-				int teaCount = Utility.getIntegerValue(scanner,
-						"몇 잔을 원하십니까? : ", "구매 수량");
-				String tea = type.name();
-				int idx = tea.length() - 1;
-				int cp = tea.codePointAt(idx);
-				String msg = customer.get고객ID() + " 고객님의 '" 
-					+ tea + (SuffixChecker.has받침(cp, 
-						tea.substring(idx)) ? "'을 " : "'를 ")
-					+ teaCount + "잔 준비합니다.";
-				/**
-				 * 고객 주소 입력
-				 */
-				DeliverAddress 배송주소 = get배송주소(scanner, 고객SN);
-				DateTimeFormatter dtf 
-				= DateTimeFormatter.ofPattern("HH:mm");
-				String timeLabel = LocalTime.now().format(dtf);
-				logger.info(msg + ", 주문 시각: " + timeLabel);
+				CustomerInfo customer = getCustomerInfo(scanner);
 				
-				save상품주문(tea, teaCount, 고객SN, 배송주소);
-				System.out.println(msg);
-			} catch (NoInputException e) {
-				System.out.println(e.getMessage() +
-						" 입력을 원하지 않습니다.");
+				if (customer != null) {
+					System.out.println("J.B.차방이 " +
+							customer.get고객ID() + 
+							"님을 환영합니다");
+					return customer;
+				}
+			} catch (NoSuch고객Exception e) {
+				System.out.println(e.getMessage());
+				logger.warning(e.getMessage());
 			}
 		}
-		System.out.println(customer.get고객ID() + "님 안녕히 가십시오.");
-		고객SN = 0;
-		customer = null;
-		Toolkit.getDefaultToolkit().beep();
 	}
-	
+
 	private int getTodaySpecial(int size) {
 		return (int)ChronoUnit.DAYS.between(
 				LocalDate.of(2021, 6, 22), LocalDate.now()) 
