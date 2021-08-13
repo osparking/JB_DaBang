@@ -126,6 +126,7 @@ public class DaBang {
 			
 			switch(option) {
 			case 1: 
+				// 고객이 자기가 과거 입력한 주소 목록을 보고 관리한다.
 				manageOwnAddress(customer.get고객SN());				
 				break;
 			case 2: 
@@ -149,8 +150,23 @@ public class DaBang {
 		}
 	}
 	
-	private void manageOwnAddress(int 고객sn) {
+	public int callManageOwnAddress(int 고객sn) {
+		return manageOwnAddress(고객sn);
+	}
+	
+	private int manageOwnAddress(int 고객sn) {
 		System.out.println("\tSN: " + 고객sn + "이 자기주소 관리~");
+		// 건수 채취
+		int addrCount = AddressMan.getCustAddrRows(고객sn);
+		
+		if (addrCount <= 20) {
+			// 주소 목록 표시
+		} else {
+			// 원하는 페이지 번호 입력 요구
+			
+		}
+		
+		return addrCount;
 	}
 
 	private void processTeaPurchase(Scanner scanner, CustomerInfo 

@@ -11,6 +11,14 @@ import com.jbpark.dabang.store.DaBang;
 class TestMethods {
 
 	@Test
+	void testManageOwnAddress() {
+		var daBang = new DaBang();
+		int count = daBang.callManageOwnAddress(8);
+		assertTrue(count == 9);
+	}
+	
+	@Test
+	@Disabled
 	void read전통고객test() {
 		String custId = "myself";
 		var customer = DaBang.read전통고객(custId);
@@ -28,6 +36,7 @@ class TestMethods {
 	}
 	
 	@Test
+	@Disabled
 	void test_getTeaProductList() {
 		DaBang daBang = new DaBang();
 		String [] keys = {"전라", "녹차"};
