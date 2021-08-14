@@ -181,6 +181,14 @@ public class DaBang {
 				break;
 				
 			case REGISTER:
+				var aMan = new AddressMan();
+				try {
+					acquireNewAddress(scanner, aMan, 고객sn);
+				} catch (StopSearchingException e) {
+					e.printStackTrace();
+				} catch (NoInputException e) {
+					e.printStackTrace();
+				}
 				break;
 				
 			case UPDATE:
@@ -696,7 +704,7 @@ public class DaBang {
 					throws StopSearchingException, 
 							NoInputException {
 		// 새 주소 입력
-		System.out.println("배송지 주소를 입력하세요.");
+		System.out.println("주소 검색키를 입력하세요.");
 		
 		AddrSearchKey key = aMan.getAddrSearchKey(scanner);
 		Integer pageNo;
