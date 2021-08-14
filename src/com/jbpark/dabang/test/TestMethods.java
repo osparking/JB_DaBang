@@ -6,15 +6,18 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.jbpark.dabang.module.RoadAddress;
+import com.jbpark.dabang.store.CustomerInfo;
 import com.jbpark.dabang.store.DaBang;
 
 class TestMethods {
 
 	@Test
 	void testManageOwnAddress() {
+		var customer = new CustomerInfo();
+		customer.set고객ID("myself");
+		customer.set고객SN(8);
 		var daBang = new DaBang();
-		int count = daBang.callManageOwnAddress(8);
-		assertTrue(count == 9);
+		daBang.callManageOwnAddress(customer);
 	}
 	
 	@Test
@@ -22,9 +25,9 @@ class TestMethods {
 	void read전통고객test() {
 		String custId = "myself";
 		var customer = DaBang.read전통고객(custId);
-		assertTrue(customer.get고객ID().equals(custId));
-		
+		assertTrue(customer.get고객ID().equals(custId));		
 	}
+	
 	@Test
 	@Disabled("관리번호 유일 값으로 바꾼 뒤까지...")
 	void test() {

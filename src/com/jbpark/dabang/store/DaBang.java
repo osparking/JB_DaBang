@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.OptionalInt;
 import java.util.Scanner;
@@ -129,7 +130,7 @@ public class DaBang {
 			switch(option) {
 			case 1: 
 				// 고객이 자기가 과거 입력한 주소 목록을 보고 관리한다.
-				manageOwnAddress(customer.get고객SN());				
+				manageOwnAddress(customer);				
 				break;
 			case 2: 
 				TeaType type = getTeaSelection(scanner);  
@@ -152,38 +153,20 @@ public class DaBang {
 		}
 	}
 	
-	public int callManageOwnAddress(int 고객sn) {
-		return manageOwnAddress(고객sn);
+	public void callManageOwnAddress(CustomerInfo customer) {
+		manageOwnAddress(customer);
 	}
 	
-	private String getCustAddrSql(int 고객sn) {
-		StringBuilder sb = new StringBuilder("select 주.주소번호, ");
-		
-		sb.append("단.단지번호, 전.고객이름, 단.우편번호, 단.도로명주소, 상세주소 ");
-		sb.append("from 고객주소 주 ");
-		sb.append("	join 단지주소 단 on 단.단지번호 = 주.단지번호 ");
-		sb.append("	join 전통고객 전 on 전.고객SN = 주.고객SN ");
-		sb.append("where 주.고객SN = ");
-		sb.append(고객sn);
-		sb.append(" order by 주.주소번호 desc");
-		
-		return sb.toString();
-	}
-	
-	private int manageOwnAddress(int 고객sn) {
-		System.out.println("\tSN: " + 고객sn + "이 자기주소 관리~");
+	private void manageOwnAddress(CustomerInfo customer) {
 		// 건수 채취
-		int rows = AddressMan.getCustAddrRows(고객sn);
-		int page = 1;
-		if (rows > 20) {
-			// 원하는 페이지 번호 입력 요구
-			page = AddressMan.getWantedPage(scanner, rows);		
-		}
-		System.out.println("채취할 페이지: " + page);
-//		fetchAddresses(고객sn, page);
-		return rows;
+		int 고객sn = customer.get고객SN();
+		int page = getShowPageNumber(고객sn);
+		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
+		
+		System.out.println("채취된 페이지: " + page);
+		AddressMan.showCustomerAddresses(logger, addresses);
 	}
-
+	
 	private void processTeaPurchase(Scanner scanner, CustomerInfo 
 			customer, TeaType type) throws StopSearchingException {
 		
@@ -573,29 +556,40 @@ public class DaBang {
 	/**
 	 * 고객 주소 선택 받아 상세 주소 입력 및 DB 저장
 	 * @param scanner
-	 * @param 고객SN
+	 * @param 고객sn
 	 * @throws NoInputException
 	 * @throws StopSearchingException
 	 */
-	private DeliverAddress get배송주소(Scanner scanner, int 고객SN)
+	private DeliverAddress get배송주소(Scanner scanner, int 고객sn)
 			throws  NoInputException, StopSearchingException {
 		AddressMan aMan = new AddressMan();
+		int page = getShowPageNumber(고객sn);
+		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
 		
-		// 고객 과거 주소 목록 표시
-		var addresses = aMan.displayCustomerAddresses(고객SN, logger);
+		AddressMan.showCustomerAddresses(logger, addresses);		
 		
 		// 새 주소 입력 혹은 과거 주소 활용
 		if (addresses.size() > 0) {
 			boolean resp = getUserResponse(
 					"과거 주소 중에서 선택하겠습니까?", scanner);
 			if (resp)
-				return useOldAddress(addresses, scanner, aMan, 고객SN);
+				return useOldAddress(addresses, scanner, aMan, 고객sn);
 		}  
-		return acquireNewAddress(scanner, aMan, 고객SN);
+		return acquireNewAddress(scanner, aMan, 고객sn);
+	}	
+
+	private int getShowPageNumber(int 고객sn) {
+		int rows = AddressMan.getCustAddrRows(고객sn);
+		int page = 1;
+		if (rows > 20) {
+			// 원하는 페이지 번호 입력 요구
+			page = AddressMan.getWantedPage(scanner, rows);		
+		}
+		return page;
 	}
 
 	private DeliverAddress useOldAddress(
-			ArrayList<CustomerAddress> addresses, 
+			List<CustomerAddress> addresses, 
 			Scanner scanner, AddressMan aMan, int 고객SN) {
 		// 사용할 과거 주소 번호 요구
 		int idx = -1;
