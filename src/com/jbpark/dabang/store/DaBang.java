@@ -179,7 +179,6 @@ public class DaBang {
 			int intOpt = Utility.getIntegerValue(scanner,
 					options, sb.toString());
 			var option = AddressOption.getOption(size, intOpt);
-//			System.out.println(option);
 			switch(option) {
 			case LISTING:
 				break;
@@ -729,23 +728,17 @@ public class DaBang {
 			if (ra != null) logger.config(ra.toString());
 		}
 		showResult(searchResult);
+		
 		int idx = Utility.getIntegerValue(scanner, 
 				"도로명 주소 번호를 입력하세요.", 
 				"주소 번호(1~" + searchResult.getAddrCount() + ")",
 				true);
-		System.out.println("선택한 주소: " + addresses[idx - 1]);
-		System.out.println("상세주소를 입력하세요.");
-		System.out.print("상세주소: ");
-		
-		String 상세주소 = "";
-		
-		if (scanner.hasNextLine()) {
-			상세주소 = scanner.nextLine();
-			System.out.println("입력한 상세주소: " + 상세주소);
-		}
-		int 단지번호 = save단지번호_주소(고객SN, 상세주소, 
+		String detailAddr = AddressMan.getDetailAddr("선택한 주소", 
+				addresses[idx - 1], scanner);
+		int 단지번호 = save단지번호_주소(고객SN, detailAddr, 
 				addresses[idx - 1]);
-		return new DeliverAddress(단지번호, 상세주소);
+		
+		return new DeliverAddress(단지번호, detailAddr);
 	}
 	
 	private class DeliverAddress {
