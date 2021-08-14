@@ -179,21 +179,27 @@ public class DaBang {
 			int intOpt = Utility.getIntegerValue(scanner,
 					options, sb.toString());
 			var option = AddressOption.getOption(size, intOpt);
-			System.out.println(option);
+//			System.out.println(option);
 			switch(option) {
 			case LISTING:
 				break;
+				
 			case REGISTER:
 				break;
+				
 			case UPDATE:
+				AddressMan.updateAddress(addresses, scanner);
 				break;
+				
 			case DELETE:
 				AddressMan.deleteAddress(addresses, scanner);
 				break;
+				
 			case FINISH:
 				return;
+				
 			default:
-				System.out.println("부적적 옵션: " + intOpt);
+				System.out.println("부적절한 옵션: " + intOpt);
 				break;
 			}
 		}		
