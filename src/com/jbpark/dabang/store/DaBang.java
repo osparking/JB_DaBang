@@ -682,6 +682,8 @@ public class DaBang {
 		idx--;
 		// 세부 주소 변경의향 확인
 		CustomerAddress addr = addresses.get(idx);
+		
+		
 		System.out.println("[선택한 주소]"); 
 		System.out.println("\t-도로명주소:" + addr.get도로명주소()); 
 		System.out.println("\t-세부주소:" + addr.get상세주소());
@@ -690,19 +692,16 @@ public class DaBang {
 				"선택한 위 주소를 그대로 사용하겠습니까?", scanner);
 
 		// 새 세부주소 요구
-		DeliverAddress deliAddr = new DeliverAddress(
+		DeliverAddress deliverAddress = new DeliverAddress(
 				addr.get단지번호(), addr.get상세주소());
 		
 		if (!use그대로) {
-			System.out.println("사용할 '세부주소'를 입력하세요.");
-			System.out.print("세부주소: ");
-			if (scanner.hasNextLine()) {
-				String 상세주소 = scanner.nextLine().trim();
-				deliAddr.set상세주소(상세주소);
-				save고객주소(고객SN, addr.get단지번호(), 상세주소);
-			}
+			String 상세주소 = AddressMan.getDetailAddr("선택한 주소", 
+					addr, scanner); 
+			deliverAddress.set상세주소(상세주소);
+			save고객주소(고객SN, addr.get단지번호(), 상세주소);
 		}
-		return deliAddr;
+		return deliverAddress;
 	}
 
 	private DeliverAddress acquireNewAddress(Scanner scanner, 
