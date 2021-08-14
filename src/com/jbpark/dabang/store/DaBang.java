@@ -165,8 +165,76 @@ public class DaBang {
 		
 		System.out.println("채취된 페이지: " + page);
 		AddressMan.showCustomerAddresses(logger, addresses);
+		
+		while (true) {
+			int size = addresses.size();
+			String options = getManageOptions(size);
+			
+			int count = (size > 0 ? 5 : 2);
+
+			var sb = new StringBuilder("수행할 작업 번호? (1~");
+			sb.append(count);
+			sb.append(")");
+			
+			int intOpt = Utility.getIntegerValue(scanner,
+					options, sb.toString());
+			var option = AddressOption.getOption(size, intOpt);
+			System.out.println(option);
+			switch(option) {
+			case LISTING:
+				break;
+			case REGISTER:
+				break;
+			case UPDATE:
+				break;
+			case DELETE:
+				break;
+			case FINISH:
+				return;
+			default:
+				System.out.println("부적적 옵션: " + intOpt);
+				break;
+			}
+		}		
 	}
 	
+	/**
+	 * 고객에 할 수 있는 주소 관리 옵션 문자열 생성 
+	 * @param size 고객 주소 목록 크기
+	 * @return 생성된 옵션 문자열
+	 */
+	private String getManageOptions(int size) {
+		var sb = new StringBuilder();
+		int idx = 1;
+		
+		sb.append("\n작업: ");
+
+		if (size > 0) {
+			sb.append("\n\t");
+			sb.append(idx++);
+			sb.append(".목록");
+		}
+		
+		sb.append(", ");
+		sb.append(idx++);
+		sb.append(".등록");
+		
+		if (size > 0) {
+			sb.append(", ");
+			sb.append(idx++);
+			sb.append(".수정");
+			
+			sb.append(", ");
+			sb.append(idx++);
+			sb.append(".삭제");
+		}
+		
+		sb.append(", ");
+		sb.append(idx++);
+		sb.append(".종료");
+		return sb.toString();
+	}
+
 	private void processTeaPurchase(Scanner scanner, CustomerInfo 
 			customer, TeaType type) throws StopSearchingException {
 		
