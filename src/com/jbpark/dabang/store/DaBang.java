@@ -160,20 +160,15 @@ public class DaBang {
 	private void manageOwnAddress(CustomerInfo customer) {
 		// 건수 채취
 		int 고객sn = customer.get고객SN();
-		int page = getShowPageNumber(고객sn);
-		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
-		
-		System.out.println("채취된 페이지: " + page);
-		AddressMan.showCustomerAddresses(logger, addresses);
+		var addresses = AddressMan.getNshowAddresses(logger,
+				scanner, 고객sn);
 		
 		while (true) {
 			int size = addresses.size();
 			String options = getManageOptions(size);
-			
-			int count = (size > 0 ? 5 : 2);
-
 			var sb = new StringBuilder("수행할 작업 번호? (1~");
-			sb.append(count);
+			
+			sb.append((size > 0 ? 5 : 2));
 			sb.append(")");
 			
 			int intOpt = Utility.getIntegerValue(scanner,
@@ -181,6 +176,8 @@ public class DaBang {
 			var option = AddressOption.getOption(size, intOpt);
 			switch(option) {
 			case LISTING:
+				addresses = AddressMan.getNshowAddresses(logger,
+						scanner, 고객sn);
 				break;
 				
 			case REGISTER:
@@ -195,7 +192,7 @@ public class DaBang {
 				break;
 				
 			case FINISH:
-				return;
+				return; // 상위 메뉴로 복귀
 				
 			default:
 				System.out.println("부적절한 옵션: " + intOpt);
@@ -637,7 +634,7 @@ public class DaBang {
 	private DeliverAddress get배송주소(Scanner scanner, int 고객sn)
 			throws  NoInputException, StopSearchingException {
 		AddressMan aMan = new AddressMan();
-		int page = getShowPageNumber(고객sn);
+		int page = AddressMan.getShowPageNumber(scanner, 고객sn);
 		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
 		
 		AddressMan.showCustomerAddresses(logger, addresses);		
@@ -651,16 +648,6 @@ public class DaBang {
 		}  
 		return acquireNewAddress(scanner, aMan, 고객sn);
 	}	
-
-	private int getShowPageNumber(int 고객sn) {
-		int rows = AddressMan.getCustAddrRows(고객sn);
-		int page = 1;
-		if (rows > 20) {
-			// 원하는 페이지 번호 입력 요구
-			page = AddressMan.getWantedPage(scanner, rows);		
-		}
-		return page;
-	}
 
 	private DeliverAddress useOldAddress(
 			List<CustomerAddress> addresses, 
