@@ -84,6 +84,8 @@ public class DaBang {
 	    }		
 	}
 	
+	Scanner scanner = new Scanner(System.in);
+	
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
 		jbDabang.checkArgs(args);
@@ -154,19 +156,32 @@ public class DaBang {
 		return manageOwnAddress(고객sn);
 	}
 	
+	private String getCustAddrSql(int 고객sn) {
+		StringBuilder sb = new StringBuilder("select 주.주소번호, ");
+		
+		sb.append("단.단지번호, 전.고객이름, 단.우편번호, 단.도로명주소, 상세주소 ");
+		sb.append("from 고객주소 주 ");
+		sb.append("	join 단지주소 단 on 단.단지번호 = 주.단지번호 ");
+		sb.append("	join 전통고객 전 on 전.고객SN = 주.고객SN ");
+		sb.append("where 주.고객SN = ");
+		sb.append(고객sn);
+		sb.append(" order by 주.주소번호 desc");
+		
+		return sb.toString();
+	}
+	
 	private int manageOwnAddress(int 고객sn) {
 		System.out.println("\tSN: " + 고객sn + "이 자기주소 관리~");
 		// 건수 채취
-		int addrCount = AddressMan.getCustAddrRows(고객sn);
-		
-		if (addrCount <= 20) {
-			// 주소 목록 표시
-		} else {
+		int rows = AddressMan.getCustAddrRows(고객sn);
+		int page = 1;
+		if (rows > 20) {
 			// 원하는 페이지 번호 입력 요구
-			
+			page = AddressMan.getWantedPage(scanner, rows);		
 		}
-		
-		return addrCount;
+		System.out.println("채취할 페이지: " + page);
+//		fetchAddresses(고객sn, page);
+		return rows;
 	}
 
 	private void processTeaPurchase(Scanner scanner, CustomerInfo 
@@ -634,7 +649,7 @@ public class DaBang {
 		
 		// 입력 가능한 페이지 번호 범위 표시
 		int rows = aMan.getTotalRows(key);
-		pageNo = aMan.getWantedPage(scanner, rows);		
+		pageNo = AddressMan.getWantedPage(scanner, rows);		
 		
 		SearchResult searchResult = aMan.searchAddress(key, pageNo);
 		searchResult.setTotalRow(rows);
