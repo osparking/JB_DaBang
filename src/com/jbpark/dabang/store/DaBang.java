@@ -188,6 +188,7 @@ public class DaBang {
 			case UPDATE:
 				break;
 			case DELETE:
+				AddressMan.deleteAddress(addresses, scanner);
 				break;
 			case FINISH:
 				return;
