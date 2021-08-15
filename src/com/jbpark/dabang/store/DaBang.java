@@ -181,9 +181,8 @@ public class DaBang {
 				break;
 				
 			case REGISTER:
-				var aMan = new AddressMan();
 				try {
-					acquireNewAddress(scanner, aMan, 고객sn);
+					acquireNewAddress(scanner, 고객sn);
 				} catch (StopSearchingException e) {
 					e.printStackTrace();
 				} catch (NoInputException e) {
@@ -641,7 +640,6 @@ public class DaBang {
 	 */
 	private DeliverAddress get배송주소(Scanner scanner, int 고객sn)
 			throws  NoInputException, StopSearchingException {
-		AddressMan aMan = new AddressMan();
 		int page = AddressMan.getShowPageNumber(scanner, 고객sn);
 		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
 		
@@ -652,14 +650,14 @@ public class DaBang {
 			boolean resp = getUserResponse(
 					"과거 주소 중에서 선택하겠습니까?", scanner);
 			if (resp)
-				return useOldAddress(addresses, scanner, aMan, 고객sn);
+				return useOldAddress(addresses, scanner, 고객sn);
 		}  
-		return acquireNewAddress(scanner, aMan, 고객sn);
+		return acquireNewAddress(scanner, 고객sn);
 	}	
 
 	private DeliverAddress useOldAddress(
 			List<CustomerAddress> addresses, 
-			Scanner scanner, AddressMan aMan, int 고객SN) {
+			Scanner scanner, int 고객SN) {
 		// 사용할 과거 주소 번호 요구
 		int idx = -1;
 		
@@ -699,21 +697,20 @@ public class DaBang {
 		return deliverAddress;
 	}
 
-	private DeliverAddress acquireNewAddress(Scanner scanner, 
-			AddressMan aMan, int 고객SN)	
+	private DeliverAddress acquireNewAddress(Scanner scanner, int 고객SN)	
 					throws StopSearchingException, 
 							NoInputException {
 		// 새 주소 입력
 		System.out.println("주소 검색키를 입력하세요.");
 		
-		AddrSearchKey key = aMan.getAddrSearchKey(scanner);
+		AddrSearchKey key = AddressMan.getAddrSearchKey(scanner);
 		Integer pageNo;
 		
 		// 입력 가능한 페이지 번호 범위 표시
-		int rows = aMan.getTotalRows(key);
+		int rows = AddressMan.getTotalRows(key);
 		pageNo = AddressMan.getWantedPage(scanner, rows);		
 		
-		SearchResult searchResult = aMan.searchAddress(key, pageNo);
+		SearchResult searchResult = AddressMan.searchAddress(key, pageNo);
 		searchResult.setTotalRow(rows);
 		
 		RoadAddress[] addresses = searchResult.getAddresses();
