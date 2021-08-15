@@ -290,12 +290,21 @@ public class DaBang {
 			var teaList = getTeaProducts(scanner);
 			int rowCount = showTeaSelection(teaList);
 			
+			if (rowCount == 0) {
+				System.out.println("검색된 차가 없습니다.");
+				continue;
+			}
 			try {
 				int tNum = Utility.getIntegerValue(scanner,
 						"어떤 차를 원하십니까? : ", 
-						"번호(1-" + rowCount + "): ");	
-				type = confirmSelection(scanner, tNum, 
-						teaList.get(tNum-1).get차종류());
+						"번호(1-" + rowCount + "): ");
+				if (tNum >= 1 && tNum <= rowCount) {
+					type = confirmSelection(scanner, tNum, 
+							teaList.get(tNum-1).get차종류());
+				} else {
+					System.out.println(tNum + "은 부적절한 선택입니다.");
+					continue;
+				}
 			} catch (TeaInputException e) {
 				String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
 				System.out.println("'" + e.getMessage() + msg);
@@ -331,10 +340,13 @@ public class DaBang {
 		}
 	}
 
-	private int getTodaySpecial(int size) {
-		return (int)ChronoUnit.DAYS.between(
+	private TeaType getTodaySpecial(int size) {
+		TeaType[] teaTypes = TeaType.values();
+		int idx = (int)ChronoUnit.DAYS.between(
 				LocalDate.of(2021, 6, 22), LocalDate.now()) 
-				% size;
+				% TeaType.values().length;
+		TeaType teaType = teaTypes[idx]; 
+		return teaType;
 	}
 	
 	private LocalDate convertToLocalDateViaMilisecond(Date dateToConvert) {
@@ -967,12 +979,14 @@ public class DaBang {
 	}
 
 	private int showTeaSelection(ArrayList<TraditionalTea> teaList) {
-		int todayIndex= getTodaySpecial(teaList.size());
+//		int todayIndex= getTodaySpecial(teaList.size());
+		TeaType todayTea= getTodaySpecial(teaList.size());
 		for (int i = 0; i < teaList.size(); i++) {
 			var teaMenu = new StringBuilder(" " + (i+1) +".");
 			TeaType currTea = teaList.get(i).get차종류(); 
 			teaMenu.append(currTea);
-			if (i == todayIndex)
+			if (currTea == todayTea)
+//				if (i == todayIndex)
 				teaMenu.append("*");
 			teaMenu.append(" - " + teaList.get(i).get설명());
 			System.out.println(teaMenu);
