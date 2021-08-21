@@ -26,64 +26,88 @@ import com.jbpark.dabang.utility.TeaType;
 
 import jbpark.utility.SuffixChecker;
 
-public class 바구니일 {
-
-	public static void searchAndOrder(Scanner scanner, 
-			Connection conn, CustomerInfo customer) 
-					throws StopSearchingException {
-		바구니일.conn = conn;
-		TeaType type = getTeaSelection(scanner);  
-//		if (type != null){
-//			processTeaPurchase(scanner, customer, type);
-//		}
-	}
+public class 상품관리 {
+	static Scanner scanner = DaBang.getScanner();
 	
-	static TeaType getTeaSelection(Scanner scanner) {
-		TeaType type = null;
+	//@formatter:off
+	public static void searchAndOrder(CustomerInfo customer) 
+			throws StopSearchingException {
+		상품관리.conn = DaBang.getConnection();
+		
+//		TeaType type = getTeaSelection(scanner);
 		
 		do {
-			String weekDay = LocalDate.now().format(DateTimeFormatter
-					.ofPattern("E").withLocale(Locale.KOREAN)); //E:요일
-			
-			System.out.println("=".repeat(40));
-			System.out.println("다음 차 종류 중에서 선택하세요:");
-			System.out.println("=".repeat(40));
-			System.out.println(" * : '" + weekDay + "'요일 특별 차!");			
-			
+			String weekDay = LocalDate.now()
+					.format(DateTimeFormatter
+					.ofPattern("E")
+					.withLocale(Locale.KOREAN)); //E:요일
 			/**
 			 * 차 상품 전체 목록 혹은 입력되는 검색 키로 검색한 결과 확보 
 			 */
 			var teaList = getTeaProducts(scanner);
+			
+			System.out.println("=".repeat(40));
+			System.out.println("다음은 차 상품 목록입니다.");
+			System.out.println("=".repeat(40));
+			System.out.println(" * : '" + weekDay + "'요일 특별 차!");	
+			
 			int rowCount = showTeaSelection(teaList);
 			
 			if (rowCount == 0) {
 				System.out.println("검색된 차가 없습니다.");
 				continue;
 			}
-			try {
-				int tNum = Utility.getIntegerValue(scanner,
-						"어떤 차를 원하십니까? : ", 
-						"번호(1-" + rowCount + "): ");
-				if (tNum >= 1 && tNum <= rowCount) {
-					type = confirmSelection(scanner, tNum, 
-							teaList.get(tNum-1).get차종류());
-				} else {
-					System.out.println(tNum + "은 부적절한 선택입니다.");
-					continue;
-				}
-			} catch (TeaInputException e) {
-				String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
-				System.out.println("'" + e.getMessage() + msg);
-				continue;
-			}
-			if (type == null) {
-				if (DaBang.getUserResponse("주문을 원치 않으십니까", scanner))
-					break;
-			} else 
+			
+			var sb = new StringBuilder();
+			sb.append("\n수행 가능 작업 목록 - ");
+			sb.append("\n\t1. 제품 상세 보기");
+			sb.append("\n\t2. 목록 재 검색");
+			sb.append("\n\t3. 상위 메뉴로 이동");
+			
+			int option = Utility.getIntegerValue(scanner,
+					sb.toString(), "수행할 작업 번호? (1~3)");
+			
+			switch(option) {
+			case 1: 
+				viewTeaDetail(teaList);				
 				break;
+			case 2: 
+				continue;
+			case 3:
+				return;
+			default:
+				System.out.println("부적절한 옵션 번호: " + option);
+				break;
+			}
 		} while (true);
-		
-		return type;
+//		if (type != null){
+//			processTeaPurchase(scanner, customer, type);
+//		}
+	}
+
+	private static void viewTeaDetail(ArrayList<TraditionalTea> teaList) {
+		System.out.println("차 상품 상세정보 표시");
+//try {
+//int tNum = Utility.getIntegerValue(scanner,
+//	"어떤 차를 원하십니까? : ", 
+//	"번호(1-" + rowCount + "): ");
+//if (tNum >= 1 && tNum <= rowCount) {
+//type = confirmSelection(scanner, tNum, 
+//		teaList.get(tNum-1).get차종류());
+//} else {
+//System.out.println(tNum + "은 부적절한 선택입니다.");
+//continue;
+//}
+//} catch (TeaInputException e) {
+//String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
+//System.out.println("'" + e.getMessage() + msg);
+//continue;
+//}
+//if (type == null) {
+//if (DaBang.getUserResponse("주문을 원치 않으십니까", scanner))
+//break;
+//} else 
+//break;		
 	}
 
 	/**
@@ -155,7 +179,7 @@ public class 바구니일 {
 		return null;
 	}
 
-	public ArrayList<TraditionalTea> callGetTeaProductList(
+	public static ArrayList<TraditionalTea> callGetTeaProductList(
 			String[] teaKeys) {
 		return getTeaProductList(teaKeys);
 	}

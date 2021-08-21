@@ -75,6 +75,10 @@ public class DaBang {
 	
 	static Scanner scanner = new Scanner(System.in);
 	
+	public static Scanner getScanner() {
+		return scanner;
+	}
+	
 	public static void main(String[] args) {
 		var jbDabang = new DaBang();
 		jbDabang.checkArgs(args);
@@ -121,7 +125,7 @@ public class DaBang {
 				manageOwnAddress(customer);				
 				break;
 			case 2: 
-				바구니일.searchAndOrder(scanner, conn, customer);
+				상품관리.searchAndOrder(customer);
 				break;
 			case 3: 
 				sb = new StringBuilder("\t");
@@ -235,7 +239,7 @@ public class DaBang {
 			// 고객 가입 옵션 제시
 			optional고객등록(scanner);
 			try {
-				CustomerInfo customer = getCustomerInfo(scanner);
+				CustomerInfo customer = getCustomerInfo();
 				
 				if (customer != null) {
 					System.out.println("J.B.차방이 " +
@@ -275,7 +279,7 @@ public class DaBang {
 		return null;		
 	}	
 
-	private CustomerInfo getCustomerInfo(Scanner scanner) 
+	private CustomerInfo getCustomerInfo() 
 			throws NoSuch고객Exception {
 		System.out.println("로그인 정보를 입력하세요.");	
 		String 고객Id = Utility.get고객ID(scanner, "\t고객ID : ",
@@ -288,7 +292,6 @@ public class DaBang {
 						+ "'님 로그인되었습니다.");
 			return customer;
 		}		
-		
 		if (scanner.hasNext()) {
 			String password = scanner.nextLine().trim();
 			var customer = read전통고객(고객Id);
