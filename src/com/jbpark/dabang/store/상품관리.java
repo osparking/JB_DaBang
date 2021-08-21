@@ -29,6 +29,59 @@ import jbpark.utility.SuffixChecker;
 public class 상품관리 {
 	static Scanner scanner = DaBang.getScanner();
 
+	/**
+	 * 
+	 * @param 상품ID
+	 * @param 주문수량
+	 * @param 바구니ID
+	 */
+	public static void buyNow(int 상품ID, int 주문수량, int 바구니ID) {
+
+	}
+
+	//@formatter:off
+	public static int buyNow(int 상품ID, int 주문수량, int 고객SN, 
+			DeliverAddress address) {
+		int result = 0;
+		String sql = "insert into 바구니(고객SN, 단지번호, 상세주소)" 
+				+ "values(?,?,?)";
+
+		var sqlSb = new StringBuilder("insert into 바구니행 ");
+		
+		sqlSb.append("(바구니ID, 상품ID, 주문수량, 금액) ");
+		sqlSb.append("select last_insert_id(), ?, ?, 가격*? ");
+		sqlSb.append("from 전통차 where 상품ID = ?");
+		
+		try (Connection conn = DaBang.getConnection()) {
+			boolean autoCommit = conn.getAutoCommit();
+			
+			conn.setAutoCommit(false);
+			try (var pstmt1 = conn.prepareStatement(sql); 
+				var pstmt2 = conn.prepareStatement(
+					sqlSb.toString())) {
+				
+				pstmt1.setInt(1, 고객SN);
+				pstmt1.setInt(2, address.get단지번호());
+				pstmt1.setString(3, address.get상세주소());
+				
+				int inserted = pstmt1.executeUpdate();
+				if (inserted == 1) {
+					pstmt2.setInt(1, 상품ID);
+					pstmt2.setInt(2, 주문수량);
+					pstmt2.setInt(3, 주문수량);
+					pstmt2.setInt(4, 상품ID);
+					
+					result = pstmt2.executeUpdate();
+				}
+			} 
+			conn.commit();
+			conn.setAutoCommit(autoCommit);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 	//@formatter:off
 	public static void searchAndOrder(CustomerInfo customer) 
 			throws StopSearchingException {
@@ -78,9 +131,6 @@ public class 상품관리 {
 				break;
 			}
 		} while (true);
-//		if (type != null){
-//			processTeaPurchase(scanner, customer, type);
-//		}
 	}
 
 	//formatter:on		
@@ -123,21 +173,6 @@ public class 상품관리 {
 				System.out.println("부적절한 옵션 번호: " + option);
 				break;
 			}			
-			
-//			TeaType type; // = getTeaSelection(scanner);
-//			try {
-//			} catch (TeaInputException e) {
-//				String msg = e.getMessage() + "를 취소하셨으니, 다시 선택해 주세요.";
-//				System.out.println("'" + e.getMessage() + msg);
-//				continue;
-//			}
-//			type = confirmSelection(scanner, tNum, 
-//					teaList.get(tNum-1).get차종류());
-//			if (type == null) {
-//				if (DaBang.getUserResponse("주문을 원치 않으십니까", scanner))
-//					break;
-//			} else 
-//				break;	
 		} while (true);
 	}
 
@@ -410,8 +445,8 @@ public class 상품관리 {
 			iPs.setInt(1, 상품id);
 			iPs.setInt(2, 고객SN);
 			iPs.setInt(3, teaCount);
-			iPs.setInt(4, 배송주소.단지번호);
-			iPs.setString(5, 배송주소.상세주소);
+			iPs.setInt(4, 배송주소.get단지번호());
+			iPs.setString(5, 배송주소.get상세주소());
 			
 			int inserted = iPs.executeUpdate();
 			logger.config("주문 DB 저장 건수: " + inserted);

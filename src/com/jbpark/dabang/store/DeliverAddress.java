@@ -1,8 +1,11 @@
 package com.jbpark.dabang.store;
 
+import lombok.Getter;
+
+@Getter
 public class DeliverAddress {
-	int 단지번호;
-	String 상세주소;
+	private int 단지번호;
+	private String 상세주소;
 	/**
 	 * @param 단지번호
 	 * @param 상세주소
