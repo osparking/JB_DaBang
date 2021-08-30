@@ -10,10 +10,8 @@ import com.jbpark.dabang.module.AddressMan;
 import com.jbpark.dabang.module.CustomerAddress;
 import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
-import com.jbpark.dabang.module.SearchResult;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
-import com.jbpark.dabang.store.DeliverAddress;
 
 public class 주소관리 {
 
@@ -54,42 +52,34 @@ public class 주소관리 {
 		int rows = AddressMan.getTotalRows(key);
 		pageNo = AddressMan.getWantedPage(scanner, rows);		
 		
-		SearchResult searchResult = AddressMan.searchAddress(key, pageNo);
-		searchResult.setTotalRow(rows);
-		
-		RoadAddress[] addresses = searchResult.getAddresses();
+		List<RoadAddress> addresses = AddressMan.get20AddressList(key, pageNo);
 		
 		for (RoadAddress ra : addresses) {
 			if (ra != null) DaBang.getLogger().config(ra.toString());
 		}
-		showResult(searchResult);
+		showResult(addresses);
 		
 		int idx = Utility.getIntegerValue(scanner, 
 				"도로명 주소 번호를 입력하세요.", 
-				"주소 번호(1~" + searchResult.getAddrCount() + ")",
+				"주소 번호(1~" + addresses.size() + ")",
 				true);
 		String detailAddr = AddressMan.getDetailAddr("선택한 주소", 
-				addresses[idx - 1], scanner);
+				addresses.get(idx - 1), scanner);
 		int 단지번호 = save단지번호_주소(고객SN, detailAddr, 
-				addresses[idx - 1]);
+				addresses.get(idx - 1));
 		
 		return new DeliverAddress(단지번호, detailAddr);
 	}
 
-	static private void showResult(SearchResult searchResult) {
-		String msg = "표시 행: " + searchResult.getAddrCount() +
-					 ", 전체 행: " + searchResult.getTotalRow();
+	static private void showResult(List<RoadAddress> addresses) {
+		String msg = "표시 행: " + addresses.size();
 		
 		DaBang.getLogger().config(msg);
 		System.out.println(msg);
 		
-		RoadAddress[] addresses = searchResult.getAddresses();
-		for (int i = 0; i < addresses.length; i++) {
-			if (addresses[i] == null) {
-				searchResult.setAddressCount(i);
-				break;
-			}
-			System.out.println("\t" + (i + 1) + addresses[i]);
+		int i = 1;
+		for (var ra : addresses) {
+			System.out.println("\t" + (i++) + ra);
 		}			
 	}
 
