@@ -72,6 +72,8 @@ public class 상품관리 {
 					pstmt2.setInt(4, 상품ID);
 					
 					result = pstmt2.executeUpdate();
+				} else {
+					throw new SQLException("바구니 생성 실패.");
 				}
 			} 
 			conn.commit();

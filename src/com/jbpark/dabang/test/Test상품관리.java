@@ -15,11 +15,11 @@ class Test상품관리 {
 	@Test
 	void test_buyNow_first() {
 		int 상품ID = 6; // 보성녹차
-		int 주문수량 = 2; // myself
+		int 주문수량 = 2;
 		int 고객SN = 6; // myself
 		
 		int 단지번호 = 16;
-		String 상세주소 = "101호";
+		String 상세주소 = "102호";
 		var address = new DeliverAddress(단지번호, 상세주소);
 		
 		int result = 상품관리.buyNow(상품ID, 주문수량, 고객SN, 
