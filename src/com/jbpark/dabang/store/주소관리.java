@@ -125,7 +125,7 @@ public class 주소관리 {
 		return deliverAddress;
 	}
 
-	static private int save고객주소(int 고객SN, int 단지번호, 
+	public static int save고객주소(int 고객SN, int 단지번호, 
 			String detailedAddr) {
 		String insert = "insert into 고객주소(고객SN, 단지번호, 상세주소) "
 				+ "values (%s, %s, '%s')";
