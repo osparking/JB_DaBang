@@ -9,6 +9,7 @@ import java.util.Scanner;
 import com.jbpark.dabang.module.AddrSearchKey;
 import com.jbpark.dabang.module.AddressMan;
 import com.jbpark.dabang.module.CustomerAddress;
+import com.jbpark.dabang.module.DBCPDataSource;
 import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.RoadAddress;
 import com.jbpark.dabang.module.StopSearchingException;
@@ -28,7 +29,7 @@ public class 주소관리 {
 	static DeliverAddress get배송주소(Scanner scanner, int 고객sn) 
 			throws NoInputException, StopSearchingException {
 		int page = AddressMan.getShowPageNumber(scanner, 고객sn);
-		var addresses = AddressMan.getCustomerAddresses(고객sn, page);
+		var addresses = AddressMan.getCustomerAddresses(고객sn, 10, page);
 
 		AddressMan.showCustomerAddresses(DaBang.getLogger(), addresses);
 
@@ -131,7 +132,7 @@ public class 주소관리 {
 				+ "values (%s, %s, '%s')";
 		String iSql = String.format(insert, 고객SN, 단지번호, detailedAddr);
 
-		try (var stmt = DaBang.getConnection().createStatement()) {
+		try (var stmt = DBCPDataSource.getConnection().createStatement()) {
 			return stmt.executeUpdate(iSql);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -143,7 +144,7 @@ public class 주소관리 {
 	static private int get단지주소번호(String mgmtNumber) {
 		String sql = "select c.단지번호 from 단지주소 c where c.관리번호 = ?";
 		try {
-			var ps = DaBang.getConnection().prepareStatement(sql);
+			var ps = DBCPDataSource.getConnection().prepareStatement(sql);
 			ps.setString(1, mgmtNumber);
 			ResultSet rs = ps.executeQuery();
 			if (rs != null && rs.next()) {
@@ -181,7 +182,7 @@ public class 주소관리 {
 				address.getRoadName());
 		ResultSet rs = null;
 
-		try (var stmt = DaBang.getConnection().createStatement()) {
+		try (var stmt = DBCPDataSource.getConnection().createStatement()) {
 			stmt.executeUpdate(iSql, Statement.RETURN_GENERATED_KEYS);
 			rs = stmt.getGeneratedKeys();
 			if (rs != null && rs.next()) {

@@ -1,7 +1,6 @@
 package com.jbpark.dabang.store;
 
 import java.awt.Toolkit;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,6 +8,7 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import com.jbpark.dabang.module.AddressMan;
+import com.jbpark.dabang.module.DBCPDataSource;
 import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
@@ -39,18 +39,7 @@ public class DaBang {
 		return logger;
 	}
 	
-	private static Connection conn = null;
-	static {
-		conn = AddressMan.getConnection();
-		if (conn != null)
-			logger.info("Connection is successful");
-	};
-	
-	public static Connection getConnection() {
-		return conn;
-	}
-
-	private void checkArgs(String[] args) {
+		private void checkArgs(String[] args) {
 	    for (int i = 0; i < args.length; i++) {
 	        switch (args[i].charAt(0)) {
 	        case '-':
@@ -258,7 +247,7 @@ public class DaBang {
 		String getCustInfo = "select 고객SN, 고객이름, salt, password"
 				+ " from 전통고객 where 고객ID = '" + 고객ID + "'";
 		try {
-			Statement getStmt = conn.createStatement();
+			Statement getStmt = DBCPDataSource.getConnection().createStatement();
 			ResultSet rs = getStmt.executeQuery(getCustInfo);
 
 			if (rs.next()) {
@@ -345,7 +334,7 @@ public class DaBang {
 				+ "(고객ID, 고객이름, salt, password) "
 				+ "values (?, ?, ?, ?);";
 		try {
-			var iPs = conn.prepareStatement(iSql);
+			var iPs = DBCPDataSource.getConnection().prepareStatement(iSql);
 			
 			iPs.setString(1, 고객Id);
 			iPs.setString(2, "아무개");
@@ -367,7 +356,7 @@ public class DaBang {
 				+ "from 전통고객 "
 				+ "where 고객ID = '" + 고객Id +"'";
 		try {
-			Statement getStmt = conn.createStatement();
+			Statement getStmt = DBCPDataSource.getConnection().createStatement();
 			ResultSet rs = getStmt.executeQuery(getSNsql);
 
 			if (rs.next()) {

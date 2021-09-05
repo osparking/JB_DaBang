@@ -19,6 +19,7 @@ import java.util.OptionalInt;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.jbpark.dabang.module.DBCPDataSource;
 import com.jbpark.dabang.module.NoInputException;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
@@ -52,7 +53,7 @@ public class 상품관리 {
 		sqlSb.append("select last_insert_id(), ?, ?, 가격*? ");
 		sqlSb.append("from 전통차 where 상품ID = ?");
 		
-		try (Connection conn = DaBang.getConnection()) {
+		try (Connection conn = DBCPDataSource.getConnection()) {
 			boolean autoCommit = conn.getAutoCommit();
 			
 			conn.setAutoCommit(false);
@@ -88,7 +89,6 @@ public class 상품관리 {
 	public static void searchAndOrder(CustomerInfo customer) 
 			throws StopSearchingException {
 		
-		상품관리.conn = DaBang.getConnection();
 		do {
 			String weekDay = LocalDate.now()
 					.format(DateTimeFormatter
