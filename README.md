@@ -2,7 +2,6 @@
 
 - 추가 개발
   - scrollable resultset 사용
-  - connection pooling 사용
   - 통합 DBMS 질의 활용 // 8.20일까지 해당 없었음
   - 주소 저장 때 transaction 활용// 필수
   - Properties 클래스 사용
