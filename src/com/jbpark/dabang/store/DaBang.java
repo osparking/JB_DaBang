@@ -330,31 +330,8 @@ public class DaBang {
 			byte[] salt = SecureMan.getSalt();
 			byte[] pwdEncd = SecureMan.encryptPassword(password, 
 					salt);
-			save전통고객(고객Id, salt, pwdEncd);
+			고객계정.save전통고객(고객Id, salt, pwdEncd);
 		}
-	}
-
-	public static int save전통고객(String 고객Id, byte[] salt, 
-			byte[] pwdEncd) {
-		String iSql = "insert into 전통고객" + "(고객ID, "
-				+ "고객이름, salt, password) " + "values (?, ?, ?, ?);";
-		try {
-			var iPs = DBCPDataSource.getConnection().
-					prepareStatement(iSql);
-
-			iPs.setString(1, 고객Id);
-			iPs.setString(2, "아무개");
-			iPs.setBytes(3, salt);
-			iPs.setBytes(4, pwdEncd);
-
-			int inserted = iPs.executeUpdate();
-			logger.config("생성된 고객ID: " + 고객Id);
-			return inserted;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			logger.severe(e.getMessage());
-		}
-		return 0;
 	}
 
 	static private String 입력접수(Scanner scanner) {
