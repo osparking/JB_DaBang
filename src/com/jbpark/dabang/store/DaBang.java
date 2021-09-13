@@ -245,33 +245,6 @@ public class DaBang {
 		}
 	}
 
-	public static CustomerInfo read전통고객(String 고객ID) {
-		String getCustInfo = "select 고객SN, 고객이름, salt, password" 
-				+ " from 전통고객 where 고객ID = '" + 고객ID + "'";
-		try {
-			Statement getStmt = DBCPDataSource.getConnection().
-					createStatement();
-			ResultSet rs = getStmt.executeQuery(getCustInfo);
-
-			if (rs.next()) {
-				var customer = new CustomerInfo();
-				customer.set고객ID(고객ID);
-
-				customer.set고객SN(rs.getInt(1));
-				customer.set고객이름(rs.getString(2));
-				customer.setSalt(rs.getBytes(3));
-				;
-				customer.setPassword(rs.getBytes(4));
-
-				return customer;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			logger.severe(e.getMessage());
-		}
-		return null;
-	}
-
 	private CustomerInfo getCustomerInfo() 
 			throws NoSuch고객Exception {
 		System.out.println("로그인 정보를 입력하세요.");
