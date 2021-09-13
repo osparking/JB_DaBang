@@ -10,8 +10,10 @@ import java.util.logging.Logger;
 import com.jbpark.dabang.module.AddressMan;
 import com.jbpark.dabang.module.DBCPDataSource;
 import com.jbpark.dabang.module.NoInputException;
+import com.jbpark.dabang.module.NoSuch고객Exception;
 import com.jbpark.dabang.module.StopSearchingException;
 import com.jbpark.dabang.module.Utility;
+import com.jbpark.dabang.module.고객계정;
 import com.jbpark.utility.JLogger;
 import com.jbpark.utility.SecureMan;
 
@@ -310,7 +312,7 @@ public class DaBang {
 					고객Id = Utility.get고객ID(scanner, preFix 
 							+ " 'ID'를 입력하세요 : ", false);
 					try {
-						get고객SN(고객Id);
+						고객계정.get고객SN(고객Id);
 						System.out.println("'" + 고객Id 
 								+ "'는 사용하실 수 없습니다.");
 						preFix = "다른";
@@ -348,27 +350,6 @@ public class DaBang {
 			int inserted = iPs.executeUpdate();
 			logger.config("생성된 고객ID: " + 고객Id);
 			return inserted;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			logger.severe(e.getMessage());
-		}
-		return 0;
-	}
-
-	private int get고객SN(String 고객Id) throws NoSuch고객Exception {
-		String getSNsql = "select 고객SN from 전통고객 " 
-				+ "where 고객ID = '" + 고객Id + "'";
-		try {
-			Statement getStmt = DBCPDataSource.getConnection().
-					createStatement();
-			ResultSet rs = getStmt.executeQuery(getSNsql);
-
-			if (rs.next()) {
-				return rs.getInt(1);
-			} else {
-				String msg = "아이디 '" + 고객Id + "'인 고객은 없습니다.";
-				throw new NoSuch고객Exception(msg);
-			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.severe(e.getMessage());
